@@ -17,6 +17,7 @@ public class JCFChannelService implements ChannelService {
     @Override
     public Channel createChannel(String name, String description, User user) {
         Channel channel = new Channel(user, name, description);
+        user.getChannels().add(channel);
         channels.put(channel.getId(), channel);
         channel.getMembers().add(user);
         return channel;
@@ -34,18 +35,15 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public List<Channel> getAllChannels() {
-        List<Channel> channelList = new ArrayList<>(channels.values());
-
-        for (Channel channel : channelList) {
-            System.out.println(channel);
-        }
-        return channelList;
+        return new ArrayList<>(channels.values());
     }
 
     @Override
     public boolean deleteChannel(UUID id, User user) {
         if (channels.containsKey(id)) {
             if (channels.get(id).getChannelAdmin().equals(user)) {
+                channels.get(id).getMembers().clear();
+                channels.get(id).getMessages().clear();
                 channels.remove(id);
                 System.out.println("삭제되었습니다.");
                 return true;

@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
@@ -10,9 +11,11 @@ import java.util.stream.Collectors;
 public class JCFUserService implements UserService {
 
     private final Map<UUID, User> users;
+    private final ChannelService channelService;
 
-    public JCFUserService() {
+    public JCFUserService(ChannelService channelService) {
         this.users = new HashMap<>();
+        this.channelService = channelService;
     }
 
     @Override
@@ -56,8 +59,17 @@ public class JCFUserService implements UserService {
     @Override
     public boolean deleteUser(UUID id) {
         if (users.containsKey(id)) {
-            users.remove(id);
-            System.out.println("성공적으로 삭제되었습니다.");
+            User user = users.get(id);
+            if (user.getChannels().isEmpty()) {
+                users.remove(id);
+                System.out.println("성공적으로 삭제되었습니다.");
+            }else {
+                user.getChannels().forEach(channel -> {
+                    channelService.deleteChannel(channel.getId(), user);
+                });
+                user.getChannels().clear();
+                users.remove(id);
+            }
             return true;
         }else {
             System.out.println("존재하지 않는 회원입니다.");

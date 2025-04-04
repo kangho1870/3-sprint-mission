@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 public class User {
@@ -8,6 +10,7 @@ public class User {
     private String password;
     private Long createdAt;
     private Long updatedAt;
+    private Set<Channel> channels = new HashSet<Channel>();
 
     public UUID getId() {
         return id;
@@ -47,6 +50,10 @@ public class User {
 
     public void setUpdatedAt(Long updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Set<Channel> getChannels() {
+        return channels;
     }
 
     public User(String userName, String password) {

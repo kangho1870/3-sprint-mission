@@ -20,9 +20,10 @@ import java.util.function.Supplier;
 public class JavaApplication {
     public static void main(String[] args) {
 
-        UserService userService = new JCFUserService();
         ChannelService channelService = new JCFChannelService();
         MessageService messageService = new JCFMessageService();
+        UserService userService = new JCFUserService(channelService);
+
         User user = new User("kangho", "1234");
         User user2 = new User("test", "1234");
 
@@ -134,6 +135,19 @@ public class JavaApplication {
                         System.out.println(e.getContent())
                 );
         System.out.println("---------------------------------");
+
+        // 채널 삭제
+        log("채널 삭제", () -> channelService.deleteChannel(channel.getId(), user));
+
+        log("채널 삭제 후", () -> channelService.getChannel(channel.getId()));
+
+        logAll("채널", channelService.getAllChannels(), System.out::println);
+        // 유저 삭제
+        log("유저 삭제", () -> userService.deleteUser(user.getId()));
+
+        log("유저 조회", () -> userService.getUser(user.getId()));
+        logAll("채널", channelService.getAllChannels(), System.out::println);
+
 
     }
 
