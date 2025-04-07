@@ -35,7 +35,6 @@ public class JavaApplication {
         log("유저 단건 조회", () -> userService.getUser(user.getId()));
 
         // 전체 유저 조회
-        userService.getAllUsers();
         logAll("전체 유저 조회", userService.getAllUsers(), System.out::println);
 
         // 유저 비밀번호 수정

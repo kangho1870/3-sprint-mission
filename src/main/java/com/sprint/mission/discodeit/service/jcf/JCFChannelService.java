@@ -62,7 +62,6 @@ public class JCFChannelService implements ChannelService {
         if (channels.containsKey(id)) {
             if (channels.get(id).getChannelAdmin().equals(user)) {
                 channels.get(id).setName(name);
-                channels.get(id).setUpdatedAt(System.currentTimeMillis());
                 System.out.println("변경되었습니다.");
                 return true;
             }else {
@@ -80,7 +79,6 @@ public class JCFChannelService implements ChannelService {
         if (channels.containsKey(id)) {
             if (channels.get(id).getChannelAdmin().equals(user)) {
                 channels.get(id).setDescription(description);
-                channels.get(id).setUpdatedAt(System.currentTimeMillis());
                 System.out.println("변경되었습니다.");
                 return true;
             }else {

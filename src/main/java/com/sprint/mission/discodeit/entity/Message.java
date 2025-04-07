@@ -1,36 +1,24 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.common.Period;
+
 import java.util.UUID;
 
-public class Message {
-    private UUID id;
+public class Message extends Period {
+
     private User sender;
     private String content;
-    private Long createdAt;
-    private Long updatedAt;
 
     public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
+        return super.getId();
     }
 
     public Long getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Long createdAt) {
-        this.createdAt = createdAt;
+        return super.getCreatedAt();
     }
 
     public Long getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(Long updatedAt) {
-        this.updatedAt = updatedAt;
+        return sender.getUpdatedAt();
     }
 
     public User getSender() {
@@ -39,6 +27,7 @@ public class Message {
 
     public void setSender(User sender) {
         this.sender = sender;
+        update();
     }
 
     public String getContent() {
@@ -47,11 +36,11 @@ public class Message {
 
     public void setContent(String content) {
         this.content = content;
+        update();
     }
 
     public Message(User sender, String content) {
-        this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
+        super();
         this.sender = sender;
         this.content = content;
     }

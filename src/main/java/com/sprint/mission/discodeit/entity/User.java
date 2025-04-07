@@ -1,35 +1,28 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.common.Period;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-public class User {
-    private UUID id;
+public class User extends Period {
     private String userName;
     private String password;
-    private Long createdAt;
-    private Long updatedAt;
     private Set<Channel> channels = new HashSet<Channel>();
 
     public UUID getId() {
-        return id;
+        return super.getId();
     }
 
-    public void setId(UUID id) {
-        this.id = id;
-    }
 
     public Long getCreatedAt() {
-        return createdAt;
+        return super.getCreatedAt();
     }
 
-    public void setCreatedAt(Long createdAt) {
-        this.createdAt = createdAt;
-    }
 
     public Long getUpdatedAt() {
-        return updatedAt;
+        return super.getUpdatedAt();
     }
 
     public String getUserName() {
@@ -38,6 +31,7 @@ public class User {
 
     public void setUserName(String userName) {
         this.userName = userName;
+        update();
     }
 
     public String getPassword() {
@@ -46,10 +40,7 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public void setUpdatedAt(Long updatedAt) {
-        this.updatedAt = updatedAt;
+        update();
     }
 
     public Set<Channel> getChannels() {
@@ -57,8 +48,7 @@ public class User {
     }
 
     public User(String userName, String password) {
-        this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
+        super();
         this.userName = userName;
         this.password = password;
     }
@@ -66,11 +56,11 @@ public class User {
     @Override
     public String toString() {
         return "User{" +
-                "id=" + id +
+                "id=" + super.getId() +
                 ", userName='" + userName + '\'' +
                 ", password='" + password + '\'' +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
+                ", createdAt=" + super.getCreatedAt() +
+                ", updatedAt=" + super.getUpdatedAt() +
                 '}';
     }
 }

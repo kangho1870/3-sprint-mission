@@ -32,11 +32,7 @@ public class JCFUserService implements UserService {
 
     @Override
     public List<User> getAllUsers() {
-        List<User> userList = new ArrayList<>(users.values());
-        for (User user : userList) {
-            System.out.println(user);
-        }
-        return userList;
+        return new ArrayList<>(users.values());
     }
 
     @Override
@@ -49,7 +45,6 @@ public class JCFUserService implements UserService {
 
         if (user.getPassword().equals(password)) {
             user.setPassword(newPassword);
-            user.setUpdatedAt(System.currentTimeMillis());
             return true;
         }else {
             System.out.println("비밀번호가 일치하지 않습니다.");
