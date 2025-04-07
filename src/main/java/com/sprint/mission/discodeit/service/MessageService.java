@@ -8,8 +8,6 @@ import java.util.List;
 
 public interface MessageService {
 
-    public boolean sendMessage(Message message, Channel channel);
-
     public List<Message> getChannelMessages(Channel channel);
 
     public boolean deleteMessage(Channel channel, Message message, User user);

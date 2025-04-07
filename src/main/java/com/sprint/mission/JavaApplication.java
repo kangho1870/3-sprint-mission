@@ -109,8 +109,8 @@ public class JavaApplication {
         Message message2 = new Message(user2, "hi~");
 
         System.out.println("---------메세지 전송-------------");
-        log("메세지 전송", () -> messageService.sendMessage(message, channel), message.getContent());
-        log("메세지 전송", () -> messageService.sendMessage(message2, channel), message2.getContent());
+        log("메세지 전송", () -> userService.sendMessage(message, channel), message.getContent());
+        log("메세지 전송", () -> userService.sendMessage(message2, channel), message2.getContent());
         System.out.println("---------------------------------");
 
         // 채널의 메세지 확인
@@ -123,7 +123,7 @@ public class JavaApplication {
         // 채널의 메세지 삭제
         System.out.println("--------메세지 삭제--------------");
         // 본인 외 메세지 삭제일 경우
-        log("메세지 삭제", () -> messageService.deleteMessage(channel, message2, user));
+//        log("메세지 삭제", () -> messageService.deleteMessage(channel, message2, user));
 
         // 본인이 작성한 메세지일 경우
         log("메세지 삭제", () -> messageService.deleteMessage(channel, message, user));
@@ -158,7 +158,7 @@ public class JavaApplication {
         System.out.println(action + " : " + (supplier.getAsBoolean() ? (action + " 성공") :(action + " 실패")));
     }
     private static <T> void log(String action, BooleanSupplier supplier, String content) {
-        System.out.print(action + " : " + (supplier.getAsBoolean() ? (action + " 성공 : " + content) :(action + " 실패 ")));
+        System.out.println(action + " : " + (supplier.getAsBoolean() ? (action + " 성공 : " + content) :(action + " 실패 ")));
     }
 
     private static <T> void logAll(String action, Collection<T> list, Consumer<T> consumer) {
