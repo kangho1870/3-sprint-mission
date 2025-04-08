@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public interface ChannelService {
 
-    public Channel createChannel(String name, String description, User user);
+    public Channel createChannel(Channel channel, User user);
 
     public Channel getChannel (UUID id);
 

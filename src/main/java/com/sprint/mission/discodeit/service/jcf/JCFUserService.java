@@ -66,6 +66,13 @@ public class JCFUserService implements UserService {
                 user.getChannels().clear();
                 users.remove(id);
             }
+            channelService.getAllChannels().forEach(channel -> {
+                channel.getMembers().forEach(member -> {
+                    if (member.getId().equals(id)) {
+                        channel.getMembers().remove(member);
+                    }
+                });
+            });
             return true;
         }else {
             System.out.println("존재하지 않는 회원입니다.");
@@ -84,19 +91,4 @@ public class JCFUserService implements UserService {
         }
     }
 
-    @Override
-    public boolean sendMessage(Message message, Channel channel) {
-        if (channel.getMembers().contains(message.getSender())) {
-            channel.getMessages().add(message);
-            return true;
-        }else {
-            System.out.println("참여하지 않은 채팅방 입니다.");
-            return false;
-        }
-    }
-
-    @Override
-    public Channel createChannel(String name, String description, User user) {
-        return channelService.createChannel(name, description, user);
-    }
 }

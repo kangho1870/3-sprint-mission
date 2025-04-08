@@ -18,7 +18,7 @@ public class Message extends Period {
     }
 
     public Long getUpdatedAt() {
-        return sender.getUpdatedAt();
+        return super.getUpdatedAt();
     }
 
     public User getSender() {

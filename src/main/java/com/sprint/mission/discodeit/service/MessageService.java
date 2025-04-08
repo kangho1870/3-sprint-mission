@@ -11,4 +11,6 @@ public interface MessageService {
     public List<Message> getChannelMessages(Channel channel);
 
     public boolean deleteMessage(Channel channel, Message message, User user);
+
+    public boolean sendMessage(Message message, Channel channel);
 }

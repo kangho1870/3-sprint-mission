@@ -33,4 +33,15 @@ public class JCFMessageService implements MessageService {
         }
         return result;
     }
+
+    @Override
+    public boolean sendMessage(Message message, Channel channel) {
+        if (channel.getMembers().contains(message.getSender())) {
+            channel.getMessages().add(message);
+            return true;
+        }else {
+            System.out.println("참여하지 않은 채팅방 입니다.");
+            return false;
+        }
+    }
 }

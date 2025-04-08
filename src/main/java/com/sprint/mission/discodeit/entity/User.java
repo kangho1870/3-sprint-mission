@@ -58,7 +58,6 @@ public class User extends Period {
         return "User{" +
                 "id=" + super.getId() +
                 ", userName='" + userName + '\'' +
-                ", password='" + password + '\'' +
                 ", createdAt=" + super.getCreatedAt() +
                 ", updatedAt=" + super.getUpdatedAt() +
                 '}';

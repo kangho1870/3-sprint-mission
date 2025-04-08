@@ -22,7 +22,4 @@ public interface UserService {
 
     public boolean joinChannel(Channel channel, User user);
 
-    public boolean sendMessage(Message message, Channel channel);
-
-    public Channel createChannel(String name, String description, User user);
 }

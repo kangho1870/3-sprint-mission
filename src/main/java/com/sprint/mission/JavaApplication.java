@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
+import com.sprint.mission.discodeit.service.usecase.CreateChannelUseCase;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,6 +24,7 @@ public class JavaApplication {
         ChannelService channelService = new JCFChannelService();
         MessageService messageService = new JCFMessageService();
         UserService userService = new JCFUserService(channelService);
+        CreateChannelUseCase createChannelUseCase = new CreateChannelUseCase(userService, channelService);
 
         User user = new User("kangho", "1234");
         User user2 = new User("test", "1234");
@@ -49,7 +51,8 @@ public class JavaApplication {
 
         // 새로운 채널 생성
         System.out.println("채널 생성");
-        Channel channel = channelService.createChannel("codeit", "코드잇 커뮤니티", user);
+        Channel channel = createChannelUseCase.createChannel("codeit", "코드잇 커뮤니티", user);
+//        Channel channel = channelService.createChannel("codeit", "코드잇 커뮤니티", user);
 
         // 유저의 채팅방 참여
         userService.joinChannel(channel, user2);
@@ -108,8 +111,8 @@ public class JavaApplication {
         Message message2 = new Message(user2, "hi~");
 
         System.out.println("---------메세지 전송-------------");
-        log("메세지 전송", () -> userService.sendMessage(message, channel), message.getContent());
-        log("메세지 전송", () -> userService.sendMessage(message2, channel), message2.getContent());
+        log("메세지 전송", () -> messageService.sendMessage(message, channel), message.getContent());
+        log("메세지 전송", () -> messageService.sendMessage(message2, channel), message2.getContent());
         System.out.println("---------------------------------");
 
         // 채널의 메세지 확인

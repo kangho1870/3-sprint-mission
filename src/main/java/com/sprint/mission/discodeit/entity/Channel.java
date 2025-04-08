@@ -12,6 +12,11 @@ public class Channel extends Period {
     private Set<User> members = new HashSet<User>();
     private List<Message> messages = new ArrayList<>();
 
+    public void addMember(User user) {
+        if (this.members.add(user)) {
+            user.getChannels().add(this);
+        }
+    }
 
     public UUID getId() {
         return super.getId();
