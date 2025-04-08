@@ -3,26 +3,37 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.List;
 
 public class JCFMessageService implements MessageService {
 
+    private final UserService userService;
+    private final ChannelService channelService;
+
+
+    public JCFMessageService(UserService userService, ChannelService channelService) {
+        this.userService = userService;
+        this.channelService = channelService;
+    }
+
     @Override
     public List<Message> getChannelMessages(Channel channel) {
-        List<Message> messages = channel.getMessages();
-        return messages;
+        return channelService.getChannel(channel.getId()).getMessages();
     }
 
     @Override
     public boolean deleteMessage(Channel channel, Message message, User user) {
         boolean result = false;
-        List<Message> messages = channel.getMessages();
+        List<Message> messages = channelService.getChannel(channel.getId()).getMessages();
+        User findUser = userService.getUser(user.getId());
         for (Message m : messages) {
             if(m.getId().equals(message.getId())) {
-                if (user.getId().equals(message.getSender().getId())) {
-                    channel.getMessages().remove(m);
+                if (findUser.getId().equals(message.getSender().getId())) {
+                    messages.remove(m);
                     result = true;
                     System.out.println("(" + m.getContent() + ") 메세지가 삭제되었습니다.");
                     break;
@@ -36,11 +47,11 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public boolean sendMessage(Message message, Channel channel) {
-        if (channel.getMembers().contains(message.getSender())) {
-            channel.getMessages().add(message);
+        if (channelService.getChannel(channel.getId()) != null) {
+            channelService.getChannel(channel.getId()).getMessages().add(message);
             return true;
-        }else {
-            System.out.println("참여하지 않은 채팅방 입니다.");
+        } else {
+            System.out.println("채널이 존재 하지 않습니다.");
             return false;
         }
     }

@@ -22,8 +22,8 @@ public class JavaApplication {
     public static void main(String[] args) {
 
         ChannelService channelService = new JCFChannelService();
-        MessageService messageService = new JCFMessageService();
         UserService userService = new JCFUserService(channelService);
+        MessageService messageService = new JCFMessageService(userService, channelService);
         CreateChannelUseCase createChannelUseCase = new CreateChannelUseCase(userService, channelService);
 
         User user = new User("kangho", "1234");
