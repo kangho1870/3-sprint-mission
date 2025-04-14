@@ -9,8 +9,8 @@ public class Channel extends Period {
     private User channelAdmin;
     private String name;
     private String description;
-    private Set<User> members = new HashSet<User>();
-    private List<Message> messages = new ArrayList<>();
+    private Set<User> members;
+    private List<Message> messages;
 
     public void addMember(User user) {
         if (this.members.add(user)) {
@@ -70,6 +70,8 @@ public class Channel extends Period {
         this.channelAdmin = user;
         this.name = name;
         this.description = description;
+        this.members = new HashSet<>();
+        this.messages = new ArrayList<>();
     }
 
     @Override

@@ -9,7 +9,7 @@ import java.util.UUID;
 public class User extends Period {
     private String userName;
     private String password;
-    private Set<Channel> channels = new HashSet<Channel>();
+    private Set<Channel> channels;
 
     public UUID getId() {
         return super.getId();
@@ -51,6 +51,7 @@ public class User extends Period {
         super();
         this.userName = userName;
         this.password = password;
+        this.channels = new HashSet<>();
     }
 
     @Override
