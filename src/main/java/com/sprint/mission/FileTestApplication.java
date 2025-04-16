@@ -97,8 +97,11 @@ public class FileTestApplication {
         log("유저 강퇴", () -> channelService.kickOutChannel(channel.getId(), user2, user));
 
         System.out.println("--------강퇴 이후 채널 유저------");
-        logAll("채널 유저", channelService.getChannel(channel.getId()).getMembers(), System.out::println);
-        logAll("채널 유저", channelService.getChannel(channel2.getId()).getMembers(), System.out::println);
+        channelService.getChannel(channel.getId())
+                .ifPresent(ch -> logAll("채널 유저", ch.getMembers(), System.out::println));
+
+        channelService.getChannel(channel2.getId())
+                .ifPresent(ch -> logAll("채널 유저", ch.getMembers(), System.out::println));
 
         // 메세지 보내기
         Message message = new Message(user, "안녕하세요");

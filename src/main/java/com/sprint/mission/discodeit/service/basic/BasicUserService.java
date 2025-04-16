@@ -26,8 +26,8 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public User getUser(UUID id) {
-        return userRepository.loadFromFile().get(id);
+    public Optional<User> getUser(UUID id) {
+        return Optional.ofNullable(userRepository.loadFromFile().get(id));
     }
 
     @Override

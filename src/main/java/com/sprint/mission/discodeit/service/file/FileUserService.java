@@ -50,8 +50,8 @@ public class FileUserService implements UserService {
     }
 
     @Override
-    public User getUser(UUID id) {
-        return loadFromFile().get(id);
+    public Optional<User> getUser(UUID id) {
+        return Optional.ofNullable(loadFromFile().get(id));
     }
 
     @Override
@@ -82,14 +82,12 @@ public class FileUserService implements UserService {
 
         User user = users.get(id);
 
-        // 유저가 속한 채널 먼저 삭제
         if (!user.getChannels().isEmpty()) {
             for (Channel channel : new HashSet<>(user.getChannels())) {
                 channelService.deleteChannel(channel.getId(), user);
             }
         }
 
-        // 모든 채널에서 유저 강퇴 처리
         user.getChannels().forEach(channel -> {
             channel.removeMember(user);
         });

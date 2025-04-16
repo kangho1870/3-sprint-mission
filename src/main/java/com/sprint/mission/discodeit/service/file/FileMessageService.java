@@ -7,10 +7,7 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class FileMessageService implements MessageService {
 
@@ -24,13 +21,9 @@ public class FileMessageService implements MessageService {
 
     @Override
     public List<Message> getChannelMessages(Channel channel) {
-        return channelService.getChannel(channel.getId()).getMessages();
-//        if (channelService instanceof FileChannelService) {
-//            Map<UUID, Channel> channels = ((FileChannelService) channelService).loadFromFile();
-//            return channels.get(channel.getId()).getMessages();
-//        } else {
-//            return List.of();
-//        }
+        Channel ch = channelService.getChannel(channel.getId())
+                .orElseThrow(() -> new NoSuchElementException("해당 채널을 찾을 수 없습니다: " + channel.getId()));
+        return ch.getMessages();
     }
 
     @Override

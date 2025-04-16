@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.service.file.FileChannelService;
 
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 public class BasicMessageService implements MessageService {
@@ -21,7 +22,12 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public List<Message> getChannelMessages(Channel channel) {
-        return channelRepository.loadFromFile().get(channel.getId()).getMessages();
+        Map<UUID, Channel> channels = channelRepository.loadFromFile();
+        if (channels.containsKey(channel.getId())) {
+            return channels.get(channel.getId()).getMessages();
+        } else {
+            throw new NoSuchElementException("해당 채널을 찾을 수 없습니다: " + channel.getId());
+        }
     }
 
     @Override

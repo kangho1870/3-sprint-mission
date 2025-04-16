@@ -25,13 +25,6 @@ public class User extends Period implements Serializable {
         this.channels = new HashSet<>();
     }
 
-    public User(UUID id, Long createdAt, Long updatedAt, String userName, String password) {
-        super(id, createdAt, updatedAt);
-        this.userName = userName;
-        this.password = password;
-        this.channels = new HashSet<>();
-    }
-
     public UUID getId() {
         return super.getId();
     }

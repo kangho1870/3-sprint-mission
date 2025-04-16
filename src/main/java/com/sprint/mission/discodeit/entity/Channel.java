@@ -26,12 +26,6 @@ public class Channel extends Period implements Serializable {
         user.getChannels().add(this);
     }
 
-    public Channel(UUID id, Long createdAt, Long updatedAt, String name, String description) {
-        super(id, createdAt, updatedAt);
-        this.name = name;
-        this.description = description;
-    }
-
     public void addMember(User user) {
         if (this.members.add(user)) {
             user.getChannels().add(this);
