@@ -1,60 +1,57 @@
-package com.sprint.mission.discodeit.service.jcf;
+package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
-public class JCFUserService implements UserService {
-
-    private final Map<UUID, User> users;
+public class BasicUserService implements UserService {
+    private final UserRepository userRepository;
     private final ChannelService channelService;
 
-    public JCFUserService(ChannelService channelService) {
-        this.users = new HashMap<>();
+    public BasicUserService(UserRepository userRepository, ChannelService channelService) {
+        this.userRepository = userRepository;
         this.channelService = channelService;
     }
 
     @Override
     public User createUser(User user) {
+        Map<UUID, User> users = userRepository.loadFromFile();
         users.put(user.getId(), user);
+        userRepository.saveToFile(users);
         return user;
     }
 
     @Override
     public User getUser(UUID id) {
-        return users.get(id);
+        return userRepository.loadFromFile().get(id);
     }
 
     @Override
     public List<User> getAllUsers() {
-        return new ArrayList<>(users.values());
+        return new ArrayList<>(userRepository.loadFromFile().values());
     }
 
     @Override
     public boolean modifyPassword(UUID id, String password, String newPassword) {
+        Map<UUID, User> users = userRepository.loadFromFile();
         User user = users.get(id);
-        if (user == null) {
-            System.out.println("존재하지 않는 회원입니다.");
-            return false;
-        }
 
-        if (user.getPassword().equals(password)) {
+        if (user != null && user.getPassword().equals(password)) {
             user.setPassword(newPassword);
+            userRepository.saveToFile(users);
             return true;
-        }else {
-            System.out.println("비밀번호가 일치하지 않습니다.");
-            return false;
         }
+        return false;
     }
 
     @Override
     public boolean deleteUser(UUID id) {
-        if (!users.containsKey(id)) {
+        Map<UUID, User> users = userRepository.loadFromFile();
+        if (users.containsKey(id)) {
             System.out.println("존재하지 않는 회원입니다.");
             return false;
         }
@@ -74,8 +71,8 @@ public class JCFUserService implements UserService {
         });
 
         users.remove(id);
+        userRepository.saveToFile(users);
         System.out.println("성공적으로 삭제되었습니다.");
         return true;
     }
-
 }

@@ -16,7 +16,6 @@ public class CreateChannelUseCase {
 
     public Channel createChannel(String name, String description, User user) {
         Channel ch = new Channel(user, name, description);
-        ch.addMember(user);
         return channelService.createChannel(ch, user);
     }
 }

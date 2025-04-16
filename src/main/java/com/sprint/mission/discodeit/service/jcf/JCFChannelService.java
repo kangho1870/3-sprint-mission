@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 
@@ -24,7 +25,7 @@ public class JCFChannelService implements ChannelService {
     }
 
     private boolean isAdmin(Channel channel, User user) {
-        boolean isAdmin = channel.getChannelAdmin().equals(user);
+        boolean isAdmin = channel.getChannelAdmin().getId().equals(user.getId());
         if (!isAdmin) {
             System.out.println("권한이 없습니다.");
         }
@@ -38,13 +39,8 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public Channel getChannel(UUID id) {
-        if (channels.containsKey(id)) {
-            return channels.get(id);
-        }else {
-            System.out.println("존재하지 않는 채널입니다.");
-            return null;
-        }
+    public Optional<Channel> getChannel(UUID id) {
+        return Optional.ofNullable(channels.get(id));
     }
 
     @Override
@@ -95,7 +91,7 @@ public class JCFChannelService implements ChannelService {
     @Override
     public boolean modifyChannelName(UUID id, User user, String name) {
         if (channels.containsKey(id)) {
-            if (channels.get(id).getChannelAdmin().equals(user)) {
+            if (isAdmin(channels.get(id), user)) {
                 channels.get(id).setName(name);
                 System.out.println("변경되었습니다.");
                 return true;
@@ -112,7 +108,7 @@ public class JCFChannelService implements ChannelService {
     @Override
     public boolean modifyChannelDescription(UUID id, User user, String description) {
         if (channels.containsKey(id)) {
-            if (channels.get(id).getChannelAdmin().equals(user)) {
+            if (isAdmin(channels.get(id), user)) {
                 channels.get(id).setDescription(description);
                 System.out.println("변경되었습니다.");
                 return true;
@@ -130,16 +126,38 @@ public class JCFChannelService implements ChannelService {
     public boolean kickOutChannel(UUID channelId, User kickUser, User admin) {
         if (channels.containsKey(channelId)) {
             Channel channel = channels.get(channelId);
-            if (channel.getChannelAdmin().getId().equals(admin.getId())) {
+            if (isAdmin(channel, admin)) {
                 channel.getMembers().remove(kickUser);
                 System.out.println(kickUser.getUserName() + "회원이 강퇴 되었습니다.");
                 return true;
             }else {
-                System.out.println("권한이 없습니다.");
                 return false;
             }
         }else {
             System.out.println("존재하지 않는 채널입니다.");
+            return false;
+        }
+    }
+
+    @Override
+    public boolean joinChannel(Channel channel, User user) {
+        if (channel.getMembers().contains(user)) {
+            System.out.println("이미 참여한 채널입니다.");
+            return false;
+        }else {
+            channel.addMember(user);
+            return true;
+        }
+    }
+
+    @Override
+    public boolean addMessageToChannel(UUID channelId, Message message) {
+        Optional<Channel> optionalChannel = getChannel(channelId);
+        if (optionalChannel.isPresent()) {
+            optionalChannel.get().getMessages().add(message);
+            return true;
+        } else {
+            System.out.println("채널이 존재하지 않습니다.");
             return false;
         }
     }

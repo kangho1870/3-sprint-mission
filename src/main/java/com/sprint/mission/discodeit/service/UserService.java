@@ -20,6 +20,5 @@ public interface UserService {
 
     public boolean deleteUser(UUID id);
 
-    public boolean joinChannel(Channel channel, User user);
 
 }
