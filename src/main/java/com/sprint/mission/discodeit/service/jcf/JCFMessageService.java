@@ -45,14 +45,4 @@ public class JCFMessageService implements MessageService {
         return result;
     }
 
-    @Override
-    public boolean sendMessage(Message message, Channel channel) {
-        if (channelService.getChannel(channel.getId()) != null) {
-            channelService.getChannel(channel.getId()).getMessages().add(message);
-            return true;
-        } else {
-            System.out.println("채널이 존재 하지 않습니다.");
-            return false;
-        }
-    }
 }
