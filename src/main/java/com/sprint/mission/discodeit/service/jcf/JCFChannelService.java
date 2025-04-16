@@ -33,7 +33,9 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public Channel createChannel(Channel channel, User user) {
+    public Channel createChannel(String channelName, String description, User user) {
+        Channel channel = new Channel(user, channelName, description);
+        channel.addMember(user);
         channels.put(channel.getId(), channel);
         return channel;
     }

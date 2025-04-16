@@ -40,9 +40,9 @@ public class FileChannelService implements ChannelService {
     }
 
     @Override
-    public Channel createChannel(Channel channel, User user) {
+    public Channel createChannel(String channelName, String description, User user) {
         Map<UUID, Channel> channels = loadFromFile();
-        if (channels.containsKey(channel.getId())) return null;
+        Channel channel = new Channel(user, channelName, description);
 
         channel.addMember(user);
 

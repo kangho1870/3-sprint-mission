@@ -4,23 +4,15 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
-import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
 import com.sprint.mission.discodeit.repository.file.FileUserRepository;
-import com.sprint.mission.discodeit.repository.jcf.JCFChannelRepository;
-import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.basic.BasicChannelService;
 import com.sprint.mission.discodeit.service.basic.BasicMessageService;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
-import com.sprint.mission.discodeit.service.file.FileChannelService;
-import com.sprint.mission.discodeit.service.file.FileMessageService;
-import com.sprint.mission.discodeit.service.file.FileUserService;
-import com.sprint.mission.discodeit.service.usecase.CreateChannelUseCase;
 
 import java.util.Collection;
 import java.util.function.BooleanSupplier;
@@ -31,18 +23,16 @@ public class FileTestApplication {
     public static void main(String[] args) {
 
         // JCFRepository Test
-        ChannelRepository channelRepository = new JCFChannelRepository();
-        UserRepository userRepository = new JCFUserRepository();
+//        ChannelRepository channelRepository = new JCFChannelRepository();
+//        UserRepository userRepository = new JCFUserRepository();
 
         // FileRepository Test
-//        ChannelRepository channelRepository = new FileChannelRepository();
-//        UserRepository userRepository = new FileUserRepository();
+        ChannelRepository channelRepository = new FileChannelRepository();
+        UserRepository userRepository = new FileUserRepository();
 
         ChannelService channelService = new BasicChannelService(channelRepository);
         UserService userService = new BasicUserService(userRepository, channelService);
         MessageService messageService = new BasicMessageService(channelRepository);
-
-        CreateChannelUseCase createChannelUseCase = new CreateChannelUseCase(userService, channelService);
 
         User user = new User("kangho", "1234");
         User user2 = new User("test", "1234");
@@ -62,8 +52,8 @@ public class FileTestApplication {
         log("유저 데이터 수정 후", () -> userService.getUser(user.getId()));
 
         // 채널 생성
-        Channel channel = createChannelUseCase.createChannel("codeit", "코드잇 커뮤니티", user);
-        Channel channel2 = createChannelUseCase.createChannel("FileIO", "코드잇 커뮤니티", user2);
+        Channel channel = channelService.createChannel("codeit", "코드잇 커뮤니티", user);
+        Channel channel2 = channelService.createChannel("FileIO", "코드잇 커뮤니티", user2);
 
         log("채널 참가", () -> channelService.joinChannel(channel, user2));
         log("채널 참가", () -> channelService.joinChannel(channel2, user));

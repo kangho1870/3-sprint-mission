@@ -6,12 +6,9 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.file.FileChannelService;
-import com.sprint.mission.discodeit.service.file.FileUserService;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
-import com.sprint.mission.discodeit.service.usecase.CreateChannelUseCase;
 
 import java.util.Collection;
 import java.util.function.BooleanSupplier;
@@ -24,7 +21,6 @@ public class JavaApplication {
         ChannelService channelService = new JCFChannelService();
         UserService userService = new JCFUserService(channelService);
         MessageService messageService = new JCFMessageService(userService, channelService);
-        CreateChannelUseCase createChannelUseCase = new CreateChannelUseCase(userService, channelService);
 
         User user = new User("kangho", "1234");
         User user2 = new User("test", "1234");
@@ -51,7 +47,7 @@ public class JavaApplication {
 
         // 새로운 채널 생성
         System.out.println("채널 생성");
-        Channel channel = createChannelUseCase.createChannel("codeit", "코드잇 커뮤니티", user);
+        Channel channel = channelService.createChannel("codeit", "코드잇 커뮤니티", user);
 //        Channel channel = channelService.createChannel("codeit", "코드잇 커뮤니티", user);
 
         // 유저의 채팅방 참여
