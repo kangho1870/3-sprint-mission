@@ -7,37 +7,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
-import java.io.*;
 import java.util.*;
 
 @Repository
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
-public class FileBinaryContentRepository implements BinaryContentRepository {
-
-    private final String FILE_PATH;
+public class FileBinaryContentRepository extends AbstractFileRepository<UUID, List<BinaryContent>> implements BinaryContentRepository {
 
     public FileBinaryContentRepository(@Value("${discodeit.repository.file-directory}") String filePath) {
-        this.FILE_PATH = filePath + "/binaryContent.ser";
-    }
-
-    public Map<UUID, List<BinaryContent>> loadFromFile() {
-        File file = new File(FILE_PATH);
-        if (!file.exists()) return new HashMap<>();
-
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-            return (Map<UUID, List<BinaryContent>>) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-            return new HashMap<>();
-        }
-    }
-
-    public void saveToFile(Map<UUID, List<BinaryContent>> binaryContents) {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
-            oos.writeObject(binaryContents);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        super(filePath, "/binaryContent.ser");
     }
 
     @Override

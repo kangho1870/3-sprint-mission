@@ -8,39 +8,19 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
-import java.io.*;
 import java.time.Instant;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.UUID;
 
 @Repository
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
-public class FileUserStatusRepository implements UserStatusRepository {
-    private final String FILE_PATH;
+public class FileUserStatusRepository extends AbstractFileRepository<UUID, UserStatus> implements UserStatusRepository {
 
     public FileUserStatusRepository(@Value("${discodeit.repository.file-directory}") String filePath) {
-        FILE_PATH = filePath + "/userStatus.ser";
+        super(filePath, "/userStatus.ser");
     }
-
-    public Map<UUID, UserStatus> loadFromFile() {
-        File file = new File(FILE_PATH);
-        if (!file.exists()) return new HashMap<>();
-
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-            return (Map<UUID, UserStatus>) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-            return new HashMap<>();
-        }
-    }
-
-    public void saveToFile(Map<UUID, UserStatus> userStatus) {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
-            oos.writeObject(userStatus);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
 
     @Override
     public UserStatus createUserStatus(UserStatusCreateRequestDto userStatusCreateRequestDto) {

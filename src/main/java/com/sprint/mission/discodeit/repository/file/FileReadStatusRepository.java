@@ -8,37 +8,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
-import java.io.*;
 import java.time.Instant;
 import java.util.*;
 
 @Repository
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
-public class FileReadStatusRepository implements ReadStatusRepository {
-    private final String FILE_PATH;
+public class FileReadStatusRepository extends AbstractFileRepository<UUID, Set<ReadStatus>> implements ReadStatusRepository {
 
     public FileReadStatusRepository(@Value("${discodeit.repository.file-directory}") String filePath) {
-        FILE_PATH = filePath + "/readStatus.ser";
-    }
-
-    public Map<UUID, Set<ReadStatus>> loadFromFile() {
-        File file = new File(FILE_PATH);
-        if (!file.exists()) return new HashMap<>();
-
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-            return (Map<UUID, Set<ReadStatus>>) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-            return new HashMap<>();
-        }
-    }
-
-    public void saveToFile(Map<UUID, Set<ReadStatus>> readStatuses ) {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
-            oos.writeObject(readStatuses);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        super(filePath, "/readStatus.ser");
     }
 
     @Override

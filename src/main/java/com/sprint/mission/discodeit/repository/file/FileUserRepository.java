@@ -8,37 +8,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
-import java.io.*;
 import java.util.*;
 
 @Repository
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
-public class FileUserRepository implements UserRepository {
+public class FileUserRepository extends AbstractFileRepository<UUID, User> implements UserRepository {
 
-    private final String FILE_PATH;
 
     public FileUserRepository(@Value("${discodeit.repository.file-directory}") String filePath) {
-        FILE_PATH = filePath + "/user.ser";
-    }
-
-    public Map<UUID, User> loadFromFile() {
-        File file = new File(FILE_PATH);
-        if (!file.exists()) return new HashMap<>();
-
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-            return (Map<UUID, User>) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-            return new HashMap<>();
-        }
-    }
-
-    public void saveToFile(Map<UUID, User> users) {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
-            oos.writeObject(users);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        super(filePath, "/user.ser");
     }
 
     @Override

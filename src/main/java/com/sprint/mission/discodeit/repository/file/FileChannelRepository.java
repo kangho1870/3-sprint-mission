@@ -8,37 +8,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
-import java.io.*;
 import java.util.*;
 
 @Repository
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
-public class FileChannelRepository implements ChannelRepository {
-    private final String FILE_PATH;
+public class FileChannelRepository extends AbstractFileRepository<UUID, Channel> implements ChannelRepository {
 
     public FileChannelRepository(@Value("${discodeit.repository.file-directory}") String filePath) {
-        FILE_PATH = filePath + "/channel.ser" ;
-    }
-
-
-    public Map<UUID, Channel> loadFromFile() {
-        File file = new File(FILE_PATH);
-        if (!file.exists()) return new HashMap<>();
-
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-            return (Map<UUID, Channel>) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-            return new HashMap<>();
-        }
-    }
-
-    public void saveToFile(Map<UUID, Channel> channels) {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
-            oos.writeObject(channels);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        super(filePath, "/channel.ser");
     }
 
     private boolean isAdmin(Channel channel, UUID userId) {
