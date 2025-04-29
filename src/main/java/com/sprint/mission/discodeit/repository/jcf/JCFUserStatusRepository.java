@@ -4,12 +4,15 @@ import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.entity.dto.userStatus.UserStatusCreateRequestDto;
 import com.sprint.mission.discodeit.entity.dto.userStatus.UserStatusUpdateRequestDto;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.*;
 
 @Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf")
+
 public class JCFUserStatusRepository implements UserStatusRepository {
 
     private final Map<UUID, UserStatus> userStatuses;

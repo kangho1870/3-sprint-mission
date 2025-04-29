@@ -12,10 +12,12 @@ import com.sprint.mission.discodeit.entity.dto.user.UserUpdateRequestDto;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,8 +30,28 @@ import static com.sprint.mission.discodeit.JavaApplication.logAll;
 @SpringBootApplication
 public class DiscodeitApplication {
 
+	@Value("${discodeit.repository.file-directory}")
+	private String fileDirectory;
+
+	public void createRepositoryDirectory() {
+		File directory = new File(fileDirectory);
+		if (!directory.exists()) {
+			boolean result = directory.mkdirs();
+			if (result) {
+				System.out.println("디렉토리 생성 완료: " + fileDirectory);
+			} else {
+				System.err.println("디렉토리 생성 실패: " + fileDirectory);
+			}
+		} else {
+			System.out.println("디렉토리 이미 존재함: " + fileDirectory);
+		}
+	}
+
 	public static void main(String[] args) {
 		ApplicationContext context = SpringApplication.run(DiscodeitApplication.class, args);
+
+		DiscodeitApplication app = context.getBean(DiscodeitApplication.class);
+		app.createRepositoryDirectory();
 
 		UserService userService = context.getBean(UserService.class);
 		ChannelService channelService = context.getBean(ChannelService.class);

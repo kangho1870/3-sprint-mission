@@ -5,16 +5,21 @@ import com.sprint.mission.discodeit.entity.dto.message.MessageCreateRequestDto;
 import com.sprint.mission.discodeit.entity.dto.message.MessageDeleteRequestDto;
 import com.sprint.mission.discodeit.entity.dto.message.MessageUpdateRequestDto;
 import com.sprint.mission.discodeit.repository.MessageRepository;
-import org.springframework.context.annotation.Primary;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.util.*;
 
 @Repository
-@Primary
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 public class FileMessageRepository implements MessageRepository {
-    private final String FILE_PATH = "message.ser";
+    private final String FILE_PATH;
+
+    public FileMessageRepository(@Value("${discodeit.repository.file-directory}") String filePath) {
+        FILE_PATH = filePath + "/message.ser";
+    }
 
     private Map<UUID, List<Message>> loadFromFile() {
         File file = new File(FILE_PATH);

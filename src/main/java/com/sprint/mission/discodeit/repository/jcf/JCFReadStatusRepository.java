@@ -4,11 +4,13 @@ import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.dto.readStatus.ReadStatusCreateRequestDto;
 import com.sprint.mission.discodeit.entity.dto.readStatus.ReadStatusUpdateRequestDto;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
 @Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf")
 public class JCFReadStatusRepository implements ReadStatusRepository {
 
 
@@ -22,8 +24,10 @@ public class JCFReadStatusRepository implements ReadStatusRepository {
     public ReadStatus createReadStatus(ReadStatusCreateRequestDto readStatusCreateRequestDto) {
         ReadStatus readStatus = new ReadStatus(readStatusCreateRequestDto.getUserId(), readStatusCreateRequestDto.getChannelId());
 
-        if (!readStatuses.containsKey(readStatus.getUserId())) {
-            throw new NoSuchElementException("존재하지 않는 채널입니다.");
+        if (!readStatuses.containsKey(readStatusCreateRequestDto.getChannelId())) {
+            Set<ReadStatus> statusSet = new HashSet<>();
+            statusSet.add(readStatus);
+            readStatuses.put(readStatusCreateRequestDto.getChannelId(), statusSet);
         }
         readStatuses.get(readStatus.getChannelId()).add(readStatus);
         return readStatus;

@@ -5,9 +5,13 @@ import com.sprint.mission.discodeit.entity.dto.message.MessageCreateRequestDto;
 import com.sprint.mission.discodeit.entity.dto.message.MessageDeleteRequestDto;
 import com.sprint.mission.discodeit.entity.dto.message.MessageUpdateRequestDto;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
+@Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf")
 public class JCFMessageRepository implements MessageRepository {
 
     private final Map<UUID, List<Message>> messages;
@@ -22,14 +26,14 @@ public class JCFMessageRepository implements MessageRepository {
 
     @Override
     public Message createMessage(MessageCreateRequestDto messageCreateRequestDto) {
-        if (messages.containsKey(messageCreateRequestDto.getChannelId())) {
-            List<Message> channelMessages = messages.get(messageCreateRequestDto.getChannelId());
-            Message message = new Message(messageCreateRequestDto.getUserId(), messageCreateRequestDto.getMessageContent());
-            messages.put(messageCreateRequestDto.getChannelId(), channelMessages);
-            return message;
-        } else {
-            throw new NoSuchElementException("존재하지 않는 채널입니다.");
+        List<Message> messages = this.messages.get(messageCreateRequestDto.getChannelId());
+        if (messages == null) {
+            messages = new ArrayList<>();
         }
+        Message message = new Message(messageCreateRequestDto.getUserId(), messageCreateRequestDto.getMessageContent());
+        messages.add(message);
+        this.messages.put(messageCreateRequestDto.getChannelId(), messages);
+        return message;
     }
 
     @Override

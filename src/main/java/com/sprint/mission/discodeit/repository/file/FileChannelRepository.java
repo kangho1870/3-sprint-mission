@@ -4,16 +4,22 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.dto.channel.*;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import org.springframework.context.annotation.Primary;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.util.*;
 
 @Repository
-@Primary
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 public class FileChannelRepository implements ChannelRepository {
-    private final String FILE_PATH = "channels.ser";
+    private final String FILE_PATH;
+
+    public FileChannelRepository(@Value("${discodeit.repository.file-directory}") String filePath) {
+        FILE_PATH = filePath + "/channel.ser" ;
+    }
+
 
     public Map<UUID, Channel> loadFromFile() {
         File file = new File(FILE_PATH);

@@ -4,7 +4,8 @@ import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.entity.dto.userStatus.UserStatusCreateRequestDto;
 import com.sprint.mission.discodeit.entity.dto.userStatus.UserStatusUpdateRequestDto;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
-import org.springframework.context.annotation.Primary;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
@@ -12,9 +13,13 @@ import java.time.Instant;
 import java.util.*;
 
 @Repository
-@Primary
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 public class FileUserStatusRepository implements UserStatusRepository {
-    private final String FILE_PATH = "userStatus.ser";
+    private final String FILE_PATH;
+
+    public FileUserStatusRepository(@Value("${discodeit.repository.file-directory}") String filePath) {
+        FILE_PATH = filePath + "/userStatus.ser";
+    }
 
     public Map<UUID, UserStatus> loadFromFile() {
         File file = new File(FILE_PATH);

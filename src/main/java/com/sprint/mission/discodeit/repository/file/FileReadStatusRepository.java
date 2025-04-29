@@ -4,7 +4,8 @@ import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.dto.readStatus.ReadStatusCreateRequestDto;
 import com.sprint.mission.discodeit.entity.dto.readStatus.ReadStatusUpdateRequestDto;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
-import org.springframework.context.annotation.Primary;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
@@ -12,9 +13,13 @@ import java.time.Instant;
 import java.util.*;
 
 @Repository
-@Primary
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 public class FileReadStatusRepository implements ReadStatusRepository {
-    private final String FILE_PATH = "readStatus.ser";
+    private final String FILE_PATH;
+
+    public FileReadStatusRepository(@Value("${discodeit.repository.file-directory}") String filePath) {
+        FILE_PATH = filePath + "/readStatus.ser";
+    }
 
     public Map<UUID, Set<ReadStatus>> loadFromFile() {
         File file = new File(FILE_PATH);
