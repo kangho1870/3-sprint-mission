@@ -24,15 +24,8 @@ public class FileUserStatusRepository extends AbstractFileRepository<UUID, UserS
 
     @Override
     public UserStatus createUserStatus(UserStatusCreateRequestDto userStatusCreateRequestDto) {
-        Map<UUID, UserStatus> userStatuses = loadFromFile();
         UserStatus status = new UserStatus(userStatusCreateRequestDto.getUserId(), userStatusCreateRequestDto.getNowTime());
-
-        if (userStatuses.containsKey(status.getId())) {
-            throw new IllegalArgumentException("데이터가 이미 존재합니다.");
-        }
-        userStatuses.put(status.getId(), status);
-        saveToFile(userStatuses);
-        return status;
+        return save(status.getId(), status);
     }
 
     @Override

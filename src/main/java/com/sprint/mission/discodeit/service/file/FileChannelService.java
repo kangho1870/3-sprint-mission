@@ -12,12 +12,17 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class FileChannelService implements ChannelService {
 
     private final UserRepository userRepository;
@@ -25,13 +30,6 @@ public class FileChannelService implements ChannelService {
     private final ReadStatusRepository readStatusRepository;
     private final MessageRepository messageRepository;
     private final String FILE_PATH = "channels.ser";
-
-    public FileChannelService(UserRepository userRepository, ChannelRepository channelRepository, ReadStatusRepository readStatusRepository, MessageRepository messageRepository) {
-        this.userRepository = userRepository;
-        this.channelRepository = channelRepository;
-        this.readStatusRepository = readStatusRepository;
-        this.messageRepository = messageRepository;
-    }
 
     private boolean isAdmin(Channel channel, UUID userId) {
         boolean isAdmin = channel.getChannelAdmin().getId().equals(userId);

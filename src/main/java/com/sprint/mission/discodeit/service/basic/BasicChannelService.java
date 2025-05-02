@@ -23,8 +23,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-@Primary
 @RequiredArgsConstructor
+@Primary
 public class BasicChannelService implements ChannelService {
 
     private final ChannelRepository channelRepository;

@@ -24,9 +24,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.sprint.mission.discodeit.JavaApplication.log;
-import static com.sprint.mission.discodeit.JavaApplication.logAll;
-
 @SpringBootApplication
 public class DiscodeitApplication {
 
@@ -74,17 +71,17 @@ public class DiscodeitApplication {
 		User user3 = userService.createUser(userCreateDto3);
 
 		// 유저 단건 조회
-		log("유저 단건 조회", () -> userService.getUser(user2.getId()));
+		userService.getUser(user2.getId());
 
 		// 전체 유저 조회
-		logAll("전체 유저 조회", userService.getAllUsers(), System.out::println);
+		userService.getAllUsers();
 
 		// 유저 비밀번호 수정
 		UserUpdateRequestDto userUpdateRequestDto = new UserUpdateRequestDto(user.getId(), user.getUserName(), "1234", "111111", null);
-		log("비밀번호 수정", () -> userService.modifyUser(userUpdateRequestDto));
+		userService.modifyUser(userUpdateRequestDto);
 
 		// 수정된 데이터 조회
-		log("유저 데이터 수정 후", () -> userService.getUser(user.getId()));
+		userService.getUser(user.getId());
 
 		// 채널 생성
 		ChannelCreateDto channelCreateDto = new ChannelCreateDto(user,"코드잇","codeit");
@@ -104,37 +101,35 @@ public class DiscodeitApplication {
 		GetPublicChannelRequestDto getPublicChannelRequestDto = new GetPublicChannelRequestDto(channel.getId());
 		GetPrivateChannelRequestDto getPrivateChannelRequestDto = new GetPrivateChannelRequestDto(channel3.getId());
 
-		log("채널 참가", () -> channelService.joinChannel(channel, user2));
-		log("채널 참가", () -> channelService.joinChannel(channel, user3));
+		channelService.joinChannel(channel, user2);
+		channelService.joinChannel(channel, user3);
+		channelService.joinChannel(channel2, user);
+		channelService.joinChannel(channel5, user2);
+		channelService.joinChannel(channel5, user3);
 
-		log("채널 참가", () -> channelService.joinChannel(channel2, user));
-		log("채널 참가", () -> channelService.joinChannel(channel5, user2));
-		log("채널 참가", () -> channelService.joinChannel(channel5, user3));
-
-		logAll("전체 채널 조회", channelService.findAllByUserId(user.getId()), System.out::println);
+		channelService.findAllByUserId(user.getId());
 
 		// 채널 수정
 		// 채널의 주인이 아닌경우
 		ChannelUpdateRequestDto channelUpdateRequestDto = new ChannelUpdateRequestDto(user.getId(), "수정한 채널 설명", channel.getId(), "수정한 채널 명");
 		ChannelUpdateRequestDto channelUpdateRequestDto2 = new ChannelUpdateRequestDto(user2.getId(), "수정한 채널 설명", channel.getId(), "수정한 채널 명");
-		log("채널 수정", () -> channelService.modifyChannel(channelUpdateRequestDto));
+		channelService.modifyChannel(channelUpdateRequestDto);
 
 		// 채널의 주인인 경우
-		log("채널 수정", () -> channelService.modifyChannel(channelUpdateRequestDto2));
+		channelService.modifyChannel(channelUpdateRequestDto2);
 
 
-		System.out.println("----채널 수정 이후 채널 목록-----");
-		logAll("채널 목록", channelService.findAllByUserId(user.getId()), System.out::println);
+		channelService.findAllByUserId(user.getId());
 
 		// 채널 강퇴
 		// 채널의 주인이 아닐경우
 //        log("유저 강퇴", () -> channelService.kickOutChannel(channel.getId(), user, user2));
 
 		// 채널의 주인일 경우
-		log("유저 강퇴", () -> channelService.kickOutChannel(channel.getId(), user2, user));
+		channelService.kickOutChannel(channel.getId(), user2, user);
 
 		System.out.println("--------강퇴 이후 채널 유저------");
-		channelService.getChannel(getPrivateChannelRequestDto).ifPresent(System.out::println);
+		channelService.getChannel(getPrivateChannelRequestDto);
 
 //		channelService.getChannel(channel.getId())
 //				.ifPresent(ch -> logAll("채널 유저", ch.getMembers(), System.out::println));
@@ -160,13 +155,13 @@ public class DiscodeitApplication {
 		MessageResponseDto message = messageService.createMessage(messageCreateRequestDto);
 		MessageResponseDto message2 = messageService.createMessage(messageCreateRequestDto2);
 
-		logAll("채널의 메세지 확인", messageService.getChannelMessages(channel.getId()), System.out::println);
+		messageService.getChannelMessages(channel.getId());
 
 		MessageUpdateRequestDto messageUpdateRequestDto = new MessageUpdateRequestDto(message.getMessageId(), "수정할 내용", channel.getId(), user.getId());
 
-		log("메세지 수정", () -> messageService.updateMessage(messageUpdateRequestDto));
+		messageService.updateMessage(messageUpdateRequestDto);
 
-		logAll("수정 후 메세지", messageService.getChannelMessages(channel.getId()), System.out::println);
+		messageService.getChannelMessages(channel.getId());
 
 		// 메세지 삭제
 		// 본인 외 메세지 삭제일 경우
@@ -177,18 +172,18 @@ public class DiscodeitApplication {
 		messageService.deleteMessage(messageDeleteRequestDto);
 //		log("메세지 삭제", () -> messageService.deleteMessage(messageDeleteRequestDto));
 
-		logAll("메세지 삭제 후", messageService.getChannelMessages(channel.getId()), System.out::println);
+		messageService.getChannelMessages(channel.getId());
 
 		// 채널 삭제
 //		log("채널 삭제", () -> channelService.deleteChannel(channel.getId(), user));
 
 //		log("채널 삭제 후", () -> channelService.getChannel(channel.getId()));
 
-		logAll("채널", channelService.findAllByUserId(user.getId()), System.out::println);
+		channelService.findAllByUserId(user.getId());
 
 		List<ChannelResponseDto> allByUserId = channelService.findAllByUserId(user.getId());
 
-		logAll("유저 참여 채널", channelService.findAllByUserId(user2.getId()), System.out::println);
+		channelService.findAllByUserId(user2.getId());
 	}
 
 }

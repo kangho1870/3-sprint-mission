@@ -23,9 +23,8 @@ import java.time.Instant;
 import java.util.*;
 
 @Service
-@Primary
-/* @RequiredArgsConstructor 매개변수가 있는 생성자를 런타임 시 생성해 줌*/
 @RequiredArgsConstructor
+@Primary
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final UserStatusRepository userStatusRepository;
@@ -39,8 +38,11 @@ public class BasicUserService implements UserService {
         UserStatusCreateRequestDto userStatusCreateRequestDto = new UserStatusCreateRequestDto(user.getId(), Instant.now());
         UserStatus userStatus = userStatusRepository.createUserStatus(userStatusCreateRequestDto);
 
-        BinaryContentCreateRequestDto binaryContentCreateRequestDto = new BinaryContentCreateRequestDto(user.getId(), BinaryContentType.PROFILE_IMAGE, BinaryOwnerType.USER, userCreateDto.getProfileImage());
-        binaryContentRepository.createBinaryContent(binaryContentCreateRequestDto);
+        if (userCreateDto.getProfileImage() != null) {
+            BinaryContentCreateRequestDto binaryContentCreateRequestDto = new BinaryContentCreateRequestDto(user.getId(), BinaryContentType.PROFILE_IMAGE, BinaryOwnerType.USER, userCreateDto.getProfileImage());
+            BinaryContent binaryContent = binaryContentRepository.createBinaryContent(binaryContentCreateRequestDto);
+            user.setProfileImage(binaryContent.getData());
+        }
         return user;
     }
 

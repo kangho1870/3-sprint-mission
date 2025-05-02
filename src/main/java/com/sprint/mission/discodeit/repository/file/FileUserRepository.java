@@ -21,11 +21,8 @@ public class FileUserRepository extends AbstractFileRepository<UUID, User> imple
 
     @Override
     public User createUser(UserCreateDto userCreateDto) {
-        Map<UUID, User> users = loadFromFile();
         User user = new User(userCreateDto);
-        users.put(user.getId(), user);
-        saveToFile(users);
-        return user;
+        return save(user.getId(), user);
     }
 
     @Override

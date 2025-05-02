@@ -28,26 +28,28 @@ public class FileChannelRepository extends AbstractFileRepository<UUID, Channel>
 
     @Override
     public Channel createChannel(ChannelCreateDto channelCreateDto) {
-        Map<UUID, Channel> channels = loadFromFile();
-        Channel channel = new Channel(
-                channelCreateDto.getAdmin(),
-                channelCreateDto.getName(),
-                channelCreateDto.getDescription()
-        );
-        channel.addMember(channelCreateDto.getAdmin());
-        channels.put(channel.getId(), channel);
-        saveToFile(channels);
-        return channel;
+        try {
+            Channel channel = new Channel(
+                    channelCreateDto.getAdmin(),
+                    channelCreateDto.getName(),
+                    channelCreateDto.getDescription()
+            );
+            return save(channel.getId(), channel);
+        } catch (RuntimeException e) {
+            throw new RuntimeException("채널 생성 실패: " + e.getMessage(), e);
+        }
     }
 
     @Override
     public Channel createChannel(ChannelCreatePrivateDto channelCreatePrivateDto) {
-        Map<UUID, Channel> channels = loadFromFile();
-        Channel channel = new Channel(channelCreatePrivateDto);
-        channel.addMember(channelCreatePrivateDto.getAdmin());
-        channels.put(channel.getId(), channel);
-        saveToFile(channels);
-        return channel;
+        try {
+            Channel channel = new Channel(channelCreatePrivateDto);
+            channel.addMember(channelCreatePrivateDto.getAdmin());
+            return save(channel.getId(), channel);
+        } catch (RuntimeException e) {
+            throw new RuntimeException("프라이빗 채널 생성 실패: " + e.getMessage(), e);
+        }
+
     }
 
     @Override

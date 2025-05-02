@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-@Primary
 @RequiredArgsConstructor
+@Primary
 public class BasicMessageService implements MessageService {
 
     private final ChannelRepository channelRepository;

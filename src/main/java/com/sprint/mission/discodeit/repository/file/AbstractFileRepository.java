@@ -1,7 +1,5 @@
 package com.sprint.mission.discodeit.repository.file;
 
-import org.springframework.beans.factory.annotation.Value;
-
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,7 +9,7 @@ public abstract class AbstractFileRepository<K, V> {
 
     private final String filePath;
 
-    protected AbstractFileRepository(@Value("${discodeit.repository.file-directory}")String basePath, String path) {
+    protected AbstractFileRepository(String basePath, String path) {
         this.filePath = basePath + path;
     }
 
@@ -21,9 +19,10 @@ public abstract class AbstractFileRepository<K, V> {
 
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
             return (Map<K, V>) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-            return new HashMap<>();
+        } catch (IOException e) {
+            throw new RuntimeException("파일 읽기 실패: " + filePath, e);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("데이터 형식 오류: " + filePath, e);
         }
     }
 
@@ -34,5 +33,13 @@ public abstract class AbstractFileRepository<K, V> {
             throw new RuntimeException("파일 저장 실패 : ", e);
         }
     }
+
+    protected V save(K key, V value) {
+        Map<K, V> data = loadFromFile();
+        data.put(key, value);
+        saveToFile(data);
+        return value;
+    }
+
 }
 

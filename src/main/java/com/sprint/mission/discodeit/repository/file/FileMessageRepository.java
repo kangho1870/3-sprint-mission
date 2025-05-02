@@ -69,8 +69,6 @@ public class FileMessageRepository extends AbstractFileRepository<UUID, List<Mes
     public void deleteMessage(MessageDeleteRequestDto messageDeleteRequestDto) {
         Map<UUID, List<Message>> messages = loadFromFile();
         List<Message> messageList = messages.get(messageDeleteRequestDto.getChannelId());
-        System.out.println("Repository Message Id " + messageDeleteRequestDto.getMessageId());
-        System.out.println();
         for (Message message : messageList) {
             if (message.getId().equals(messageDeleteRequestDto.getMessageId())) {
                 if (message.getSender().equals(messageDeleteRequestDto.getUserId())) {

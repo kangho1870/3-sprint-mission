@@ -1,9 +1,11 @@
 package com.sprint.mission.discodeit.entity.dto.user;
 
 import lombok.Getter;
+import lombok.ToString;
 
 import java.util.UUID;
 
+@ToString
 @Getter
 public class UserUpdateRequestDto {
 
