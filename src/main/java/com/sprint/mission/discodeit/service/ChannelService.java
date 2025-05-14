@@ -1,8 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.dto.channel.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -10,21 +9,22 @@ import java.util.UUID;
 
 public interface ChannelService {
 
-    public Channel createChannel(String channelName, String description, User user);
+    public ChannelResponseDto createChannel(ChannelCreateDto channelCreateDto);
 
-    public Optional<Channel> getChannel (UUID id);
+    public ChannelResponseDto createChannel(ChannelCreatePrivateDto channelCreatePrivateDto);
 
-    public List<Channel> getAllChannels();
+    public Optional<ChannelResponseDto> getChannel (GetPublicChannelRequestDto getPublicChannelRequestDto);
 
-    public boolean deleteChannel (UUID id, User user);
+    public Optional<ChannelResponseDto> getChannel (GetPrivateChannelRequestDto getPrivateChannelRequestDto);
 
-    public boolean modifyChannelName (UUID id, User user, String name);
+    public List<ChannelResponseDto> findAllByUserId (UUID userId);
 
-    public boolean modifyChannelDescription (UUID id, User user, String description);
+    public boolean deleteChannel (UUID id, UUID userId);
+
+    public boolean modifyChannel (ChannelUpdateRequestDto channelUpdateRequestDto);
 
     public boolean kickOutChannel (UUID channelId, User kickUser, User admin);
 
-    public boolean joinChannel(Channel channel, User user);
+    public boolean joinChannel(UUID channelId, UUID userId);
 
-    public boolean addMessageToChannel (UUID channelId, Message message);
 }

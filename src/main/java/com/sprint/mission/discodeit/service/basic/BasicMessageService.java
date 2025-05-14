@@ -1,56 +1,106 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.dto.binaryContent.BinaryContentCreateRequestDto;
+import com.sprint.mission.discodeit.entity.dto.message.MessageCreateRequestDto;
+import com.sprint.mission.discodeit.entity.dto.message.MessageDeleteRequestDto;
+import com.sprint.mission.discodeit.entity.dto.message.MessageResponseDto;
+import com.sprint.mission.discodeit.entity.dto.message.MessageUpdateRequestDto;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.file.FileChannelService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
+@Service
+@RequiredArgsConstructor
+@Primary
 public class BasicMessageService implements MessageService {
 
     private final ChannelRepository channelRepository;
-
-    public BasicMessageService(ChannelRepository channelRepository) {
-        this.channelRepository = channelRepository;
-    }
-
-    @Override
-    public List<Message> getChannelMessages(Channel channel) {
-        Map<UUID, Channel> channels = channelRepository.loadFromFile();
-        if (channels.containsKey(channel.getId())) {
-            return channels.get(channel.getId()).getMessages();
-        } else {
-            throw new NoSuchElementException("해당 채널을 찾을 수 없습니다: " + channel.getId());
-        }
-    }
+    private final UserRepository userRepository;
+    private final MessageRepository messageRepository;
+    private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public boolean deleteMessage(Channel channel, Message message, User user) {
-        boolean result = false;
+    public MessageResponseDto createMessage(MessageCreateRequestDto messageCreateRequestDto, BinaryContentCreateRequestDto binaryContentCreateRequestDto) {
+        Message message = new Message(messageCreateRequestDto.getUserId(), messageCreateRequestDto.getMessageContent());
+        messageRepository.createMessage(message, messageCreateRequestDto.getChannelId());
 
-        Map<UUID, Channel> channels = channelRepository.loadFromFile();
-
-        if (channels.containsKey(channel.getId())) {
-            Channel ch = channels.get(channel.getId());
-            for (Message m : ch.getMessages()) {
-                if (m.getId().equals(message.getId())) {
-                    ch.getMessages().remove(m);
-                    channelRepository.saveToFile(channels);
-                    result = true;
-                    System.out.println("(" + m.getContent() + ") 메세지가 삭제되었습니다.");
-                    break;
-                } else {
-                    System.out.println("본인이 작성한 메세지만 삭제할 수 있습니다.");
-                }
+        if (binaryContentCreateRequestDto != null && binaryContentCreateRequestDto.getData() != null) {
+            for (byte[] fileData : binaryContentCreateRequestDto.getData()) {
+                BinaryContent binaryContent = new BinaryContent(
+                        message.getId(),
+                        binaryContentCreateRequestDto.getContentType(),
+                        binaryContentCreateRequestDto.getFileContentType(),
+                        fileData
+                );
+                binaryContentRepository.createBinaryContent(binaryContent);
             }
         }
 
-        return result;
+        return new MessageResponseDto(message);
+    }
+
+    @Override
+    public List<MessageResponseDto> getChannelMessages(UUID channelId) {
+        List<Message> messages = messageRepository.getChannelMessages(channelId);
+        List<MessageResponseDto> messageResponseDtos = new ArrayList<>();
+
+        for (Message message : messages) {
+            List<BinaryContent> messageBinaryContents = binaryContentRepository.findAllAttachmentsByOwnerId(message.getId());
+
+            List<byte[]> messageFiles = new ArrayList<>();
+            for (BinaryContent binaryContent : messageBinaryContents) {
+                messageFiles.add(binaryContent.getData());
+            }
+
+            MessageResponseDto dto = new MessageResponseDto(message, messageFiles);
+            messageResponseDtos.add(dto);
+        }
+
+        return messageResponseDtos;
+    }
+
+    @Override
+    public boolean updateMessage(MessageUpdateRequestDto messageUpdateRequestDto) {
+        List<Message> messages = messageRepository.getChannelMessages(messageUpdateRequestDto.getChannelId());
+
+        for (Message message : messages) {
+            if (message.getId().equals(messageUpdateRequestDto.getMessageId())) {
+                message.setContent(messageUpdateRequestDto.getMessageContent());
+                return messageRepository.updateMessage(message, messageUpdateRequestDto.getChannelId());
+            }
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean deleteMessage(MessageDeleteRequestDto messageDeleteRequestDto) {
+        Message message = null;
+        List<Message> channelMessages = messageRepository.getChannelMessages(messageDeleteRequestDto.getChannelId());
+        for (Message msg : channelMessages) {
+            if (msg.getId().equals(messageDeleteRequestDto.getMessageId())) {
+                message = msg;
+                break;
+            }
+        }
+        boolean messageResult = messageRepository.deleteMessage(message, messageDeleteRequestDto.getChannelId());
+
+//        바이너리 삭제 로직
+        boolean binaryContentResult = binaryContentRepository.findAllAttachmentsByOwnerId(messageDeleteRequestDto.getMessageId())
+                .stream()
+                .allMatch(file -> binaryContentRepository.deleteBinaryContentById(file.getId()));
+
+        return messageResult && binaryContentResult;
     }
 }

@@ -2,159 +2,181 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.dto.channel.*;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.ReadStatusRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
+@Service
+@RequiredArgsConstructor
+@Primary
 public class BasicChannelService implements ChannelService {
 
     private final ChannelRepository channelRepository;
+    private final UserRepository userRepository;
+    private final ReadStatusRepository readStatusRepository;
+    private final MessageRepository messageRepository;
 
-    public BasicChannelService(ChannelRepository channelRepository) {
-        this.channelRepository = channelRepository;
-    }
-
-    private boolean isAdmin(Channel channel, User user) {
-        boolean isAdmin = channel.getChannelAdmin().getId().equals(user.getId());
-        if (!isAdmin) {
-            System.out.println("권한이 없습니다.");
-        }
-        return isAdmin;
+    @Override
+    public ChannelResponseDto createChannel(ChannelCreateDto dto) {
+        User admin = getUserOrThrow(dto.getAdminId());
+        Channel channel = new Channel(admin, dto.getName(), dto.getDescription());
+        return createChannelResponseDto(channelRepository.createChannel(channel));
     }
 
     @Override
-    public Channel createChannel(String channelName, String description, User user) {
-        Map<UUID, Channel> channels = channelRepository.loadFromFile();
-        Channel channel = new Channel(user, channelName, description);
-
-        channel.addMember(user);
-
-        channels.put(channel.getId(), channel);
-        channelRepository.saveToFile(channels);
-        return channel;
+    public ChannelResponseDto createChannel(ChannelCreatePrivateDto dto) {
+        User admin = getUserOrThrow(dto.getAdminId());
+        Channel channel = new Channel(dto, admin);
+        Channel savedChannel = channelRepository.createChannel(channel);
+        createReadStatuses(savedChannel, dto.getUsers(), admin);
+        return createChannelResponseDto(savedChannel);
     }
 
     @Override
-    public Optional<Channel> getChannel(UUID id) {
-        return Optional.ofNullable(channelRepository.loadFromFile().get(id));
+    public Optional<ChannelResponseDto> getChannel(GetPublicChannelRequestDto dto) {
+        return channelRepository.getChannel(dto)
+                .map(this::createChannelResponseDto);
     }
 
     @Override
-    public List<Channel> getAllChannels() {
-        return new ArrayList<>(channelRepository.loadFromFile().values());
+    public Optional<ChannelResponseDto> getChannel(GetPrivateChannelRequestDto dto) {
+        return channelRepository.getChannel(dto)
+                .map(channel -> createPrivateChannelResponseDto(channel));
     }
 
     @Override
-    public boolean deleteChannel(UUID id, User user) {
-        Map<UUID, Channel> channels = channelRepository.loadFromFile();
-
-        if (channels.containsKey(id)) {
-            Channel channel = channels.get(id);
-            if (isAdmin(channel, user)) {
-                Set<User> memberCopy = new HashSet<>(channel.getMembers());
-                memberCopy.forEach(member -> {
-                    member.getChannels().remove(channel);
-                });
-
-                channels.remove(id);
-                channelRepository.saveToFile(channels);
-                System.out.println("삭제 되었습니다.");
-                return true;
-            }else {
-                return false;
-            }
-        }
-        return false;
+    public List<ChannelResponseDto> findAllByUserId(UUID userId) {
+        return channelRepository.findAllByUserId(userId).stream()
+                .map(channel -> channel.getType() == ChannelType.PUBLIC ?
+                        createChannelResponseDto(channel) :
+                        createPrivateChannelResponseDto(channel))
+                .collect(Collectors.toList());
     }
 
     @Override
-    public boolean modifyChannelName(UUID id, User user, String name) {
-        Map<UUID, Channel> channels = channelRepository.loadFromFile();
-
-        if (channels.containsKey(id)) {
-            System.out.println(user.getId());
-            if (isAdmin(channels.get(id), user)) {
-                channels.get(id).setName(name);
-                channelRepository.saveToFile(channels);
-                System.out.println("변경되었습니다.");
-                return true;
-            }else {
-                return false;
-            }
-        }else {
-            System.out.println("존재하지 않는 채널입니다.");
+    public boolean deleteChannel(UUID channelId, UUID userId) {
+        Optional<Channel> channelOpt = channelRepository.getChannel(new GetPublicChannelRequestDto(channelId));
+        if (channelOpt.isEmpty() || !isAdmin(channelOpt.get(), userId)) {
             return false;
         }
+
+        Channel channel = channelOpt.get();
+        deleteChannelResources(channel);
+        return channelRepository.deleteChannel(channelId, userId);
     }
 
     @Override
-    public boolean modifyChannelDescription(UUID id, User user, String description) {
-        Map<UUID, Channel> channels = channelRepository.loadFromFile();
-
-        if (channels.containsKey(id)) {
-            if (isAdmin(channels.get(id), user)) {
-                channels.get(id).setDescription(description);
-                channelRepository.saveToFile(channels);
-                System.out.println("변경되었습니다.");
-                return true;
-            }else {
-                return false;
-            }
-        }else {
-            System.out.println("존재하지 않는 채널입니다.");
-            return false;
-        }
+    public boolean modifyChannel(ChannelUpdateRequestDto dto) {
+        return channelRepository.getChannel(new GetPublicChannelRequestDto(dto.getChannelId()))
+                .filter(channel -> isAdmin(channel, dto.getAdminId()))
+                .map(channel -> {
+                    updateChannelFields(channel, dto);
+                    return channelRepository.modifyChannel(channel);
+                })
+                .orElse(false);
     }
 
     @Override
     public boolean kickOutChannel(UUID channelId, User kickUser, User admin) {
-        Map<UUID, Channel> channels = channelRepository.loadFromFile();
-
-        if (channels.containsKey(channelId)) {
-            Channel channel = channels.get(channelId);
-
-            if (isAdmin(channel, admin)) {
-                boolean removed = channel.getMembers().remove(kickUser);
-                kickUser.getChannels().remove(channel); // 양방향 제거
-
-                if (removed) {
-                    channelRepository.saveToFile(channels);
-                    System.out.println(kickUser.getUserName() + " 회원이 강퇴되었습니다.");
-                    return true;
-                } else {
-                    System.out.println("강퇴 실패: 멤버 목록에 없습니다.");
-                }
-            }
-        } else {
-            System.out.println("존재하지 않는 채널입니다.");
-        }
-        return false;
+        return channelRepository.kickOutChannel(channelId, kickUser, admin);
     }
 
     @Override
-    public boolean joinChannel(Channel channel, User user) {
-        Map<UUID, Channel> channels = channelRepository.loadFromFile();
-        Channel ch = channels.get(channel.getId());
-        if (ch != null) {
-            ch.addMember(user);
-            channelRepository.saveToFile(channels);
-            return true;
-        }
-        return false;
+    public boolean joinChannel(UUID channelId, UUID userId) {
+        User user = getUserOrThrow(userId);
+        return channelRepository.joinChannel(channelId, user);
     }
 
-    @Override
-    public boolean addMessageToChannel(UUID channelId, Message message) {
-        Map<UUID, Channel> channels = channelRepository.loadFromFile();
+    // 내부 헬퍼 메서드들
+    private User getUserOrThrow(UUID userId) {
+        return userRepository.getUser(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+    }
 
-        if (channels.containsKey(channelId)) {
-            Channel ch = channels.get(channelId);
-            ch.getMessages().add(message);
-            channelRepository.saveToFile(channels);
-            return true;
+    private void createReadStatuses(Channel channel, Set<UUID> memberIds, User admin) {
+        if (memberIds != null) {
+            memberIds.forEach(userId -> createReadStatus(userId, channel.getId()));
         }
-        return false;
+        createReadStatus(admin.getId(), channel.getId());
+    }
+
+    private void createReadStatus(UUID userId, UUID channelId) {
+        ReadStatus readStatus = new ReadStatus(userId, channelId);
+        readStatusRepository.createReadStatus(readStatus);
+    }
+
+    private boolean isAdmin(Channel channel, UUID userId) {
+        return channel.getChannelAdmin().getId().equals(userId);
+    }
+
+    private void updateChannelFields(Channel channel, ChannelUpdateRequestDto dto) {
+        Optional.ofNullable(dto.getChannelName())
+                .ifPresent(channel::setName);
+        Optional.ofNullable(dto.getChannelDescription())
+                .ifPresent(channel::setDescription);
+    }
+
+    private void deleteChannelResources(Channel channel) {
+        deleteChannelMessages(channel);
+        deleteChannelReadStatuses(channel);
+    }
+
+    private void deleteChannelMessages(Channel channel) {
+        channel.getMessages().forEach(message ->
+                messageRepository.deleteMessage(message, channel.getId())
+        );
+    }
+
+    private void deleteChannelReadStatuses(Channel channel) {
+        channel.getMembers().stream()
+                .map(User::getId)
+                .forEach(memberId ->
+                        readStatusRepository.findAllByUserId(memberId).stream()
+                                .filter(rs -> rs.getChannelId().equals(channel.getId()))
+                                .forEach(rs -> readStatusRepository.deleteReadStatus(rs.getId()))
+                );
+    }
+
+    private ChannelResponseDto createChannelResponseDto(Channel channel) {
+        ChannelResponseDto dto = new ChannelResponseDto();
+        setBasicChannelInfo(dto, channel);
+        setLastMessageTime(dto, channel);
+        return dto;
+    }
+
+    private ChannelResponseDto createPrivateChannelResponseDto(Channel channel) {
+        ChannelResponseDto dto = createChannelResponseDto(channel);
+        dto.setMemberIds(channel.getMembers().stream()
+                .map(User::getId)
+                .collect(Collectors.toSet()));
+        return dto;
+    }
+
+    private void setBasicChannelInfo(ChannelResponseDto dto, Channel channel) {
+        dto.setChannelId(channel.getId());
+        dto.setName(channel.getName());
+        dto.setDescription(channel.getDescription());
+        dto.setType(channel.getType());
+    }
+
+    private void setLastMessageTime(ChannelResponseDto dto, Channel channel) {
+        List<Message> messages = messageRepository.getChannelMessages(channel.getId());
+        if (!messages.isEmpty()) {
+            dto.setLastMessageAt(messages.get(messages.size() - 1).getCreatedAt());
+        }
     }
 }
