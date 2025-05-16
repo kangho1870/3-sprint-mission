@@ -9167,7 +9167,7 @@ const Xe = {apiBaseUrl: "/api"}, Dt = bn(r => ({
     users: [], fetchUsers: async () => {
         try {
             const i = await he.get(`${Xe.apiBaseUrl}/users`);
-            r({users: i.data})
+            r({users: i.data.data})
         } catch (i) {
             console.error("사용자 목록 조회 실패:", i)
         }
@@ -9180,9 +9180,8 @@ const Xe = {apiBaseUrl: "/api"}, Dt = bn(r => ({
     }
 })), Wt = bn(r => ({
     profileImages: {}, fetchProfileImage: async i => {
-        console.log(i)
         try {
-            const s = await he.get(`${Xe.apiBaseUrl}/binaryContents/${i}`), u = s.data.bytes,
+            const s = await he.get(`${Xe.apiBaseUrl}/binaryContents/${i}`), u = s.data.data.bytes,
                 d = `data:${s.data.contentType};base64,${u}`;
             return r(p => ({profileImages: {...p.profileImages, [i]: d}})), d
         } catch (s) {
@@ -9291,7 +9290,7 @@ const Uu = r => i => {
         }, updateUser: async (i, s) => {
             try {
                 const u = await he.patch(`${Xe.apiBaseUrl}/users/${i}`, s, {headers: {"Content-Type": "multipart/form-data"}});
-                return await Dt.getState().fetchUsers(), u.data
+                return await Dt.getState().fetchUsers(), u.data.data
             } catch (u) {
                 throw console.error("사용자 정보 수정 실패:", u), u
             }
@@ -9757,7 +9756,7 @@ const fv = N.div`
     channels: [], pollingInterval: null, fetchChannels: async s => {
         try {
             const u = await he.get(`${Xe.apiBaseUrl}/channels`, {params: {userId: s}});
-            return r({channels: u.data}), u.data
+            return r({channels: u.data.data}), u.data.data
         } catch (u) {
             console.error("채널 목록 조회 실패:", u)
         }
@@ -9769,32 +9768,18 @@ const fv = N.div`
         r({pollingInterval: u})
     }, stopPolling: () => {
         i().pollingInterval && (clearInterval(i().pollingInterval), r({pollingInterval: null}))
-    }, createPublicChannel: async (s) => {
-    try {
-        console.log(s)
-      const channelData = {
-        adminId: s.userId,  // userId를 adminId로 전달
-        name: s.name,
-        description: s.description
-      };
-        console.log(channelData)
-      const u = await he.post(`${Xe.apiBaseUrl}/channels/public`, channelData);
-      const c = {
-        ...u.data,
-        participantIds: [],
-        lastMessageAt: u.data.createdAt
-      };
-
-      r(d => ({channels: [...d.channels, c]}));
-      return c;
-    } catch (u) {
-      console.error("공개 채널 생성 실패:", u);
-      throw u;
-    }
-  }, createPrivateChannel: async s => {
+    }, createPublicChannel: async s => {
+        try {
+            const u = await he.post(`${Xe.apiBaseUrl}/channels/public`, s),
+                c = {...u.data.data, participantIds: [], lastMessageAt: u.data.data.createdAt};
+            return r(d => ({channels: [...d.channels, c]})), c
+        } catch (u) {
+            throw console.error("공개 채널 생성 실패:", u), u
+        }
+    }, createPrivateChannel: async s => {
         try {
             const u = await he.post(`${Xe.apiBaseUrl}/channels/private`, {participantIds: s}),
-                c = {...u.data, participantIds: s, lastMessageAt: u.data.createdAt};
+                c = {...u.data.data, participantIds: s, lastMessageAt: u.data.data.createdAt};
             return r(d => ({channels: [...d.channels, c]})), c
         } catch (u) {
             throw console.error("비공개 채널 생성 실패:", u), u
@@ -9823,7 +9808,7 @@ function Iv({isOpen: r, type: i, onClose: s, onCreateSuccess: u}) {
                         j("채널 이름을 입력해주세요.");
                         return
                     }
-                    await L({name: c.name, description: c.description, userId: I})
+                    await L({name: c.name, description: c.description})
                 } else {
                     if (v.length === 0) {
                         j("대화 상대를 선택해주세요.");
@@ -9892,7 +9877,7 @@ const yo = bn((r, i) => ({
         try {
             const s = ut.getState().currentUserId;
             if (!s) return;
-            const c = (await he.get(`${Xe.apiBaseUrl}/readStatuses`, {params: {userId: s}})).data.reduce((d, p) => (d[p.channelId] = {
+            const c = (await he.get(`${Xe.apiBaseUrl}/readStatuses`, {params: {userId: s}})).data.data.reduce((d, p) => (d[p.channelId] = {
                 id: p.id,
                 lastReadAt: p.lastReadAt
             }, d), {});
@@ -9902,18 +9887,15 @@ const yo = bn((r, i) => ({
         }
     }, updateReadStatus: async s => {
         try {
-            console.log(s)
-
             const u = ut.getState().currentUserId;
             if (!u) return;
             const c = i().readStatuses[s];
-            console.log(c)
             let d;
             c ? d = await he.patch(`${Xe.apiBaseUrl}/readStatuses/${c.id}`, {newLastReadAt: new Date().toISOString()}) : d = await he.post(`${Xe.apiBaseUrl}/readStatuses`, {
                 userId: u,
                 channelId: s,
                 lastReadAt: new Date().toISOString()
-            }), r(p => ({readStatuses: {...p.readStatuses, [s]: {id: d.data.id, lastReadAt: d.data.lastReadAt}}}))
+            }), r(p => ({readStatuses: {...p.readStatuses, [s]: {id: d.data.data.id, lastReadAt: d.data.data.lastReadAt}}}))
         } catch (u) {
             console.error("읽음 상태 업데이트 실패:", u)
         }
@@ -9947,9 +9929,7 @@ function _v({currentUser: r, activeChannel: i, onChannelSelect: s}) {
             console.error("채널 생성 실패:", H)
         }
     }, F = T => {
-        console.log(T)
-        console.log(T.channelId)
-        s(T), O(T.channelId)
+        s(T), O(T.id)
     }, W = m.reduce((T, H) => (T[H.type] || (T[H.type] = []), T[H.type].push(H), T), {});
     return g.jsxs(oy, {
         children: [g.jsx(fy, {}), g.jsxs(iy, {
@@ -10290,17 +10270,11 @@ const Qd = N.div`
     color: ${({theme: r}) => r.colors.text.primary};
   }
 `, vo = bn((r, i) => ({
-        messages: [], pollingIntervals: {}, lastMessageId: null, fetchMessages: async channelId => {
+        messages: [], pollingIntervals: {}, lastMessageId: null, fetchMessages: async s => {
             try {
-                const c = await he.get(`${Xe.apiBaseUrl}/messages/${channelId}`);
-                const messages = (c.data || []).map(raw => ({
-                    id: raw.messageId,
-                    content: raw.messageContent,
-                    authorId: raw.userId,
-                    attachmentIds: raw.messageFile ? [raw.messageFile] : [],
-                    createdAt: raw.createdAt || new Date().toISOString()
-                }));
-                r(p => ({ messages }));
+                const u = await he.get(`${Xe.apiBaseUrl}/messages`, {params: {channelId: s}}),
+                    c = u.data.data[u.data.data.length - 1], d = (c == null ? void 0 : c.id) !== i().lastMessageId;
+                return r({messages: u.data.data, lastMessageId: c == null ? void 0 : c.id}), d
             } catch (u) {
                 return console.error("메시지 목록 조회 실패:", u), !1
             }
@@ -10330,54 +10304,31 @@ const Qd = N.div`
             }
         }, createMessage: async s => {
             try {
-                console.log("시작")
-                const u = new FormData();
+                const u = new FormData;
                 u.append("messageCreateRequest", new Blob([JSON.stringify({
-                    messageContent: s.content,
+                    content: s.content,
                     channelId: s.channelId,
-                    userId: s.authorId
-                })], { type: "application/json" }));
-
-                s.attachments && s.attachments.forEach(p => {
-                    u.append("attachments", p);
+                    authorId: s.authorId
+                })], {type: "application/json"})), s.attachments && s.attachments.forEach(p => {
+                    u.append("attachments", p)
                 });
-                console.log(u)
-
-                const c = await he.post(`${Xe.apiBaseUrl}/messages`, u, {
-                    headers: { "Content-Type": "multipart/form-data" }
-                });
-
-                const raw = c.data;
-                console.log(c)
-                const normalizedMessage = {
-                    id: raw.messageId,
-                    content: raw.messageContent,
-                    authorId: raw.userId,
-                    attachmentIds: raw.messageFile ? [raw.messageFile] : [],
-                    createdAt: raw.createdAt || new Date().toISOString()
-                };
-
-                const d = yo.getState().updateReadStatus;
-                if (s.channelId) await d(s.channelId);
-
-                r(p => ({ messages: [...p.messages, normalizedMessage] }));
-                return normalizedMessage;
+                const c = await he.post(`${Xe.apiBaseUrl}/messages`, u, {headers: {"Content-Type": "multipart/form-data"}}),
+                    d = yo.getState().updateReadStatus;
+                return await d(s.channelId), r(p => ({messages: [...p.messages, c.data.data]})), c.data.data
             } catch (u) {
-                console.error("메시지 생성 실패:", u);
-                throw u;
+                throw console.error("메시지 생성 실패:", u), u
             }
         }
     })), p1 = bn((r, i) => ({
         attachments: {}, fetchAttachment: async s => {
             if (i().attachments[s]) return i().attachments[s];
-            console.log(s)
             try {
                 const u = await he.get(`${Xe.apiBaseUrl}/binaryContents/${s}`), {
                     bytes: c,
                     contentType: d,
                     fileName: p,
                     size: m
-                } = u.data, x = {url: `data:${d};base64,${c}`, contentType: d, originalName: p, size: m};
+                } = u.data.data, x = {url: `data:${d};base64,${c}`, contentType: d, originalName: p, size: m};
                 return r(E => ({attachments: {...E.attachments, [s]: x}})), x
             } catch (u) {
                 return console.error("첨부파일 정보 조회 실패:", u), null
@@ -10407,7 +10358,7 @@ function m1({channel: r}) {
     const x = async (P, I) => {
             try {
                 const R = await he.get(`${Xe.apiBaseUrl}/binaryContents/${P}`, {responseType: "blob"}),
-                    L = new Blob([R.data], {type: R.headers["content-type"]}), V = window.URL.createObjectURL(L),
+                    L = new Blob([R.data.data], {type: R.headers["content-type"]}), V = window.URL.createObjectURL(L),
                     F = document.createElement("a");
                 F.href = V, F.download = I, F.style.display = "none", document.body.appendChild(F);
                 try {
@@ -10487,7 +10438,7 @@ function g1({channel: r}) {
     const [i, s] = ue.useState(""), [u, c] = ue.useState([]), d = vo(O => O.createMessage),
         p = ut(O => O.currentUserId), m = async O => {
             if (O.preventDefault(), !(!i.trim() && u.length === 0)) try {
-                await d({content: i.trim(), channelId: r.channelId, authorId: p, attachments: u}), s(""), c([])
+                await d({content: i.trim(), channelId: r.id, authorId: p, attachments: u}), s(""), c([])
             } catch (P) {
                 console.error("메시지 전송 실패:", P)
             }
@@ -10704,7 +10655,7 @@ function j1({isOpen: r, onClose: i}) {
                     password: p
                 })], {type: "application/json"})), v && F.append("profile", v);
                 const W = await he.post(`${Xe.apiBaseUrl}/users`, F);
-                I(W.data), i()
+                I(W.data.data), i()
             } catch {
                 P("회원가입에 실패했습니다.")
             }
@@ -10810,7 +10761,7 @@ const T1 = N.span`
             var P;
             try {
                 const I = await he.post(`${Xe.apiBaseUrl}/auth/login`, {username: s, password: c});
-                I.status === 200 && (await j(), E(I.data), m(""), i())
+                I.status === 200 && (await j(), E(I.data.data), m(""), i())
             } catch (I) {
                 console.error("로그인 에러:", I), ((P = I.response) == null ? void 0 : P.status) === 401 ? m("아이디 또는 비밀번호가 올바르지 않습니다.") : m("로그인에 실패했습니다.")
             }
