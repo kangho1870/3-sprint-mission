@@ -1,64 +1,56 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.entity.common.Period;
-import com.sprint.mission.discodeit.entity.dto.user.UserCreateDto;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.time.Instant;
+import java.util.UUID;
 
 @Getter
-@Setter
-public class User extends Period implements Serializable {
-    private static final long serialVersionUID = 1L;
+public class User implements Serializable {
 
-    private String userName;
-    private String password;
-    private String email;
-    private Set<Channel> channels;
-    private byte[] profileImage;
+  private static final long serialVersionUID = 1L;
 
-    public User() {
+  private UUID id;
+  private Instant createdAt;
+  private Instant updatedAt;
+  //
+  private String username;
+  private String email;
+  private String password;
+  private UUID profileId;     // BinaryContent
+
+  public User(String username, String email, String password, UUID profileId) {
+    this.id = UUID.randomUUID();
+    this.createdAt = Instant.now();
+    //
+    this.username = username;
+    this.email = email;
+    this.password = password;
+    this.profileId = profileId;
+  }
+
+  public void update(String newUsername, String newEmail, String newPassword, UUID newProfileId) {
+    boolean anyValueUpdated = false;
+    if (newUsername != null && !newUsername.equals(this.username)) {
+      this.username = newUsername;
+      anyValueUpdated = true;
+    }
+    if (newEmail != null && !newEmail.equals(this.email)) {
+      this.email = newEmail;
+      anyValueUpdated = true;
+    }
+    if (newPassword != null && !newPassword.equals(this.password)) {
+      this.password = newPassword;
+      anyValueUpdated = true;
+    }
+    if (newProfileId != null && !newProfileId.equals(this.profileId)) {
+      this.profileId = newProfileId;
+      anyValueUpdated = true;
     }
 
-    public User(UserCreateDto userCreateDto) {
-        super();
-        this.userName = userCreateDto.getUsername();
-        this.password = userCreateDto.getPassword();
-        this.channels = new HashSet<>();
-        this.email = userCreateDto.getEmail();
+    if (anyValueUpdated) {
+      this.updatedAt = Instant.now();
     }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
-        update();
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-        update();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        User user = (User) obj;
-        return Objects.equals(this.getId(), user.getId());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(getId());
-    }
-
-    public void joinChannel(Channel channel) {
-        channels.add(channel);
-        if (!channel.getMembers().contains(this)) {
-            channel.addMember(this); // 양방향 연결
-        }
-    }
+  }
 }

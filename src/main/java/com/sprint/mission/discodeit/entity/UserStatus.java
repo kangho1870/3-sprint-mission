@@ -1,8 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.entity.common.Period;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.Duration;
@@ -10,33 +8,39 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Getter
-@Setter
-public class UserStatus extends Period implements Serializable {
+public class UserStatus implements Serializable {
 
-    private final UUID userId;
-    private Instant lastActivityAt;
+  private static final long serialVersionUID = 1L;
+  private UUID id;
+  private Instant createdAt;
+  private Instant updatedAt;
+  //
+  private UUID userId;
+  private Instant lastActiveAt;
 
-    public UserStatus(UUID userId, Instant lastActivityAt) {
-        super();
-        this.userId = userId;
-        this.lastActivityAt = lastActivityAt;
+  public UserStatus(UUID userId, Instant lastActiveAt) {
+    this.id = UUID.randomUUID();
+    this.createdAt = Instant.now();
+    //
+    this.userId = userId;
+    this.lastActiveAt = lastActiveAt;
+  }
+
+  public void update(Instant lastActiveAt) {
+    boolean anyValueUpdated = false;
+    if (lastActiveAt != null && !lastActiveAt.equals(this.lastActiveAt)) {
+      this.lastActiveAt = lastActiveAt;
+      anyValueUpdated = true;
     }
 
-    public void update(Instant lastActiveAt) {
-        boolean anyValueUpdated = false;
-        if (lastActiveAt != null && !lastActiveAt.equals(this.lastActivityAt)) {
-            this.lastActivityAt = lastActiveAt;
-            anyValueUpdated = true;
-        }
-
-        if (anyValueUpdated) {
-            this.lastActivityAt = Instant.now();
-        }
+    if (anyValueUpdated) {
+      this.updatedAt = Instant.now();
     }
+  }
 
-    public boolean isOnline() {
-        Instant instantFiveMinutesAgo = Instant.now().minus(Duration.ofMinutes(5));
+  public Boolean isOnline() {
+    Instant instantFiveMinutesAgo = Instant.now().minus(Duration.ofMinutes(5));
 
-        return lastActivityAt.isAfter(instantFiveMinutesAgo);
-    }
+    return lastActiveAt.isAfter(instantFiveMinutesAgo);
+  }
 }

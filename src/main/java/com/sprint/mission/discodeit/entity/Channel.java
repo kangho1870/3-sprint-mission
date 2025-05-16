@@ -1,72 +1,45 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.entity.common.Period;
-import com.sprint.mission.discodeit.entity.dto.channel.ChannelCreatePrivateDto;
-import com.sprint.mission.discodeit.entity.dto.channel.ChannelType;
 import lombok.Getter;
 
 import java.io.Serializable;
-import java.util.*;
+import java.time.Instant;
+import java.util.UUID;
 
 @Getter
-public class Channel extends Period implements Serializable {
-    private static final long serialVersionUID = 1L;
+public class Channel implements Serializable {
 
-    private User channelAdmin;
-    private String name;
-    private String description;
-    private Set<User> members;
-    private List<Message> messages;
-    private ChannelType type;
+  private static final long serialVersionUID = 1L;
+  private UUID id;
+  private Instant createdAt;
+  private Instant updatedAt;
+  //
+  private ChannelType type;
+  private String name;
+  private String description;
 
-    public Channel() {}
+  public Channel(ChannelType type, String name, String description) {
+    this.id = UUID.randomUUID();
+    this.createdAt = Instant.now();
+    //
+    this.type = type;
+    this.name = name;
+    this.description = description;
+  }
 
-    public Channel(User user, String name, String description) {
-        super();
-        this.channelAdmin = user;
-        this.name = name;
-        this.description = description;
-        this.type = ChannelType.PUBLIC;
-        this.members = new HashSet<>();
-        this.messages = new ArrayList<>();
-        user.getChannels().add(this);
+  public void update(String newName, String newDescription) {
+    boolean anyValueUpdated = false;
+    if (newName != null && !newName.equals(this.name)) {
+      this.name = newName;
+      anyValueUpdated = true;
+    }
+    if (newDescription != null && !newDescription.equals(this.description)) {
+      this.description = newDescription;
+      anyValueUpdated = true;
     }
 
-    public Channel(ChannelCreatePrivateDto channelCreatePrivateDto, User user) {
-        super();
-        this.channelAdmin = user;
-        this.members = new HashSet<>();
-        this.messages = new ArrayList<>();
-        this.type = ChannelType.PRIVATE;
+    if (anyValueUpdated) {
+      this.updatedAt = Instant.now();
     }
-
-    public void addMember(User user) {
-        if (this.members.add(user)) {
-            user.getChannels().add(this);
-        }
-    }
-
-    public void removeMember(User user) {
-        this.members.remove(user);
-    }
-
-    public UUID getId() {
-        return super.getId();
-    }
-
-    public void setChannelAdmin(User channelAdmin) {
-        this.channelAdmin = channelAdmin;
-        update();
-    }
-
-    public void setName(String name) {
-        this.name = name;
-        update();
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-        update();
-    }
-
+  }
 }
