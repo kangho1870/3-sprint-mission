@@ -10416,7 +10416,9 @@ function m1({channel: r}) {
                 })
             }, I) : null
         }) : null, j = P => new Date(P).toLocaleTimeString(),
-        O = [...i].sort((P, I) => P.createdAt.localeCompare(I.createdAt));
+        O = [...i].sort((P, I) => {
+            return String(P?.data?.createdAt || "").localeCompare(String(I?.data?.createdAt || ""));
+        });
     return g.jsx(Qv, {
         children: g.jsx(qv, {
             children: O.map(P => {
