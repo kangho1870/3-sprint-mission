@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 
 import java.io.Serializable;
@@ -11,6 +12,7 @@ public class BinaryContent implements Serializable {
 
   private static final long serialVersionUID = 1L;
   private UUID id;
+  @JsonFormat(shape = JsonFormat.Shape.STRING)
   private Instant createdAt;
   //
   private String fileName;

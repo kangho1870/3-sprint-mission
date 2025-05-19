@@ -65,12 +65,12 @@ public class AuthController {
           )
   })
   @PostMapping("/login")
-  public ResponseEntity<CodeMessageResponseDto<?>> login(@RequestBody LoginRequest loginRequest) {
+  public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
       try {
           User user = authService.login(loginRequest);
           return ResponseEntity
                   .status(HttpStatus.OK)
-                  .body(CodeMessageResponseDto.success(user));
+                  .body(user);
       } catch (IllegalArgumentException e) {
           return ResponseEntity
                   .status(HttpStatus.BAD_REQUEST)

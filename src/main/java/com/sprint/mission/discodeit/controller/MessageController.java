@@ -80,7 +80,7 @@ public class MessageController {
           )
   )
   @PostMapping(value = "", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<CodeMessageResponseDto<?>> create(
+  public ResponseEntity<?> create(
       @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
       @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
   ) {
@@ -103,7 +103,7 @@ public class MessageController {
           Message createdMessage = messageService.create(messageCreateRequest, attachmentRequests);
           return ResponseEntity
                   .status(HttpStatus.CREATED)
-                  .body(CodeMessageResponseDto.success(createdMessage));
+                  .body(createdMessage);
       } catch (NoSuchElementException e) {
           return ResponseEntity
                   .status(HttpStatus.NOT_FOUND)
@@ -158,14 +158,14 @@ public class MessageController {
           schema = @Schema(implementation = Message.class)
   )
   @PatchMapping("/{messageId}")
-  public ResponseEntity<CodeMessageResponseDto<?>> update(@PathVariable("messageId") UUID messageId,
+  public ResponseEntity<?> update(@PathVariable("messageId") UUID messageId,
       @RequestBody MessageUpdateRequest request) {
 
       try {
           Message updatedMessage = messageService.update(messageId, request);
           return ResponseEntity
                   .status(HttpStatus.OK)
-                  .body(CodeMessageResponseDto.success(updatedMessage));
+                  .body(updatedMessage);
       } catch (NoSuchElementException e) {
           return ResponseEntity
                   .status(HttpStatus.NOT_FOUND)
@@ -216,16 +216,12 @@ public class MessageController {
           )
   })
   @DeleteMapping("/{messageId}")
-  public ResponseEntity<CodeMessageResponseDto<?>> delete(@PathVariable("messageId") UUID messageId) {
+  public ResponseEntity<?> delete(@PathVariable("messageId") UUID messageId) {
       try {
           messageService.delete(messageId);
           return ResponseEntity
                   .status(HttpStatus.NO_CONTENT)
-                  .body(new CodeMessageResponseDto<>(
-                          ResponseCode.SUCCESS,
-                          ResponseMessage.SUCCESS,
-                          "Message가 성공적으로 삭제됨"
-                  ));
+                  .body("Message가 성공적으로 삭제됨");
       } catch (NoSuchElementException e) {
           return ResponseEntity
                   .status(HttpStatus.NOT_FOUND)
@@ -266,13 +262,13 @@ public class MessageController {
           schema = @Schema(type = "string", format = "uuid")
   )
   @GetMapping("")
-  public ResponseEntity<CodeMessageResponseDto<?>> findAllByChannelId(
+  public ResponseEntity<?> findAllByChannelId(
       @RequestParam("channelId") UUID channelId) {
       try {
           List<Message> messages = messageService.findAllByChannelId(channelId);
           return ResponseEntity
                   .status(HttpStatus.OK)
-                  .body(CodeMessageResponseDto.success(messages));
+                  .body(messages);
       } catch (RuntimeException e) {
           return ResponseEntity
                   .status(HttpStatus.INTERNAL_SERVER_ERROR)

@@ -65,12 +65,12 @@ public class BinaryContentController {
           schema = @Schema(type = "string", format = "uuid")
   )
   @GetMapping("/{binaryContentId}")
-  public ResponseEntity<CodeMessageResponseDto<?>> find(@PathVariable UUID binaryContentId) {
+  public ResponseEntity<?> find(@PathVariable UUID binaryContentId) {
       try {
           BinaryContent binaryContent = binaryContentService.find(binaryContentId);
           return ResponseEntity
                   .status(HttpStatus.OK)
-                  .body(CodeMessageResponseDto.success(binaryContent));
+                  .body(binaryContent);
       } catch (NoSuchElementException e) {
           return ResponseEntity
                   .status(HttpStatus.NOT_FOUND)
@@ -110,13 +110,13 @@ public class BinaryContentController {
           array = @ArraySchema(schema = @Schema(type = "string", format = "uuid"))
   )
   @GetMapping("")
-  public ResponseEntity<CodeMessageResponseDto<?>> findAllByIdIn(
+  public ResponseEntity<?> findAllByIdIn(
       @RequestParam("binaryContentIds") List<UUID> binaryContentIds) {
       try {
           List<BinaryContent> binaryContents = binaryContentService.findAllByIdIn(binaryContentIds);
           return ResponseEntity
                   .status(HttpStatus.OK)
-                  .body(CodeMessageResponseDto.success(binaryContents));
+                  .body(binaryContents);
       } catch (RuntimeException e) {
           return ResponseEntity
                   .status(HttpStatus.INTERNAL_SERVER_ERROR)

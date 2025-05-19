@@ -75,12 +75,12 @@ public class ReadStatusController {
           schema = @Schema(implementation = ReadStatusCreateRequest.class)
   )
   @PostMapping("")
-  public ResponseEntity<CodeMessageResponseDto<?>> create(@RequestBody ReadStatusCreateRequest request) {
+  public ResponseEntity<?> create(@RequestBody ReadStatusCreateRequest request) {
       try {
           ReadStatus createdReadStatus = readStatusService.create(request);
           return ResponseEntity
                   .status(HttpStatus.CREATED)
-                  .body(CodeMessageResponseDto.success(createdReadStatus));
+                  .body(createdReadStatus);
       } catch (IllegalArgumentException e) {
           return ResponseEntity
                   .status(HttpStatus.BAD_REQUEST)
@@ -141,13 +141,13 @@ public class ReadStatusController {
           schema = @Schema(implementation = ReadStatusUpdateRequest.class)
   )
   @PatchMapping("/{readStatusId}")
-  public ResponseEntity<CodeMessageResponseDto<?>> update(@PathVariable("readStatusId") UUID readStatusId,
+  public ResponseEntity<?> update(@PathVariable("readStatusId") UUID readStatusId,
       @RequestBody ReadStatusUpdateRequest request) {
       try {
           ReadStatus updatedReadStatus = readStatusService.update(readStatusId, request);
           return ResponseEntity
                   .status(HttpStatus.OK)
-                  .body(CodeMessageResponseDto.success(updatedReadStatus));
+                  .body(updatedReadStatus);
       } catch (NoSuchElementException e) {
           return ResponseEntity
                   .status(HttpStatus.NOT_FOUND)
@@ -187,12 +187,12 @@ public class ReadStatusController {
           schema = @Schema(type = "string", format = "uuid")
   )
   @GetMapping("")
-  public ResponseEntity<CodeMessageResponseDto<?>> findAllByUserId(@RequestParam("userId") UUID userId) {
+  public ResponseEntity<?> findAllByUserId(@RequestParam("userId") UUID userId) {
       try {
           List<ReadStatus> readStatuses = readStatusService.findAllByUserId(userId);
           return ResponseEntity
                   .status(HttpStatus.OK)
-                  .body(CodeMessageResponseDto.success(readStatuses));
+                  .body(readStatuses);
       } catch (RuntimeException e) {
           return ResponseEntity
                   .status(HttpStatus.INTERNAL_SERVER_ERROR)

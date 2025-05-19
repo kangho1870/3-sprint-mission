@@ -72,7 +72,7 @@ public class UserController {
           )
   )
   @PostMapping("")
-  public ResponseEntity<CodeMessageResponseDto<?>> create(
+  public ResponseEntity<?> create(
           @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
           @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
@@ -83,7 +83,7 @@ public class UserController {
 
       return ResponseEntity
               .status(HttpStatus.CREATED)
-              .body(CodeMessageResponseDto.success(createdUser));
+              .body(createdUser);
 
     } catch (IllegalArgumentException e) {
       return ResponseEntity
@@ -146,7 +146,7 @@ public class UserController {
           )
   )
   @PatchMapping("/{userId}")
-  public ResponseEntity<CodeMessageResponseDto<?>> update(
+  public ResponseEntity<?> update(
       @PathVariable("userId") UUID userId,
       @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
       @RequestPart(value = "profile", required = false) MultipartFile profile
@@ -157,7 +157,7 @@ public class UserController {
       User updatedUser = userService.update(userId, userUpdateRequest, profileRequest);
       return ResponseEntity
               .status(HttpStatus.OK)
-              .body(CodeMessageResponseDto.success(updatedUser));
+              .body(updatedUser);
     } catch (IllegalArgumentException e) {
       return ResponseEntity
               .status(HttpStatus.BAD_REQUEST)
@@ -201,16 +201,12 @@ public class UserController {
           schema = @Schema(type = "string", format = "uuid")
   )
   @DeleteMapping("/{userId}")
-  public ResponseEntity<CodeMessageResponseDto<?>> delete(@PathVariable("userId") UUID userId) {
+  public ResponseEntity<?> delete(@PathVariable("userId") UUID userId) {
     try {
       userService.delete(userId);
       return ResponseEntity
               .status(HttpStatus.NO_CONTENT)
-              .body(new CodeMessageResponseDto<>(
-                      ResponseCode.SUCCESS,
-                      ResponseMessage.SUCCESS,
-                      "User가 성공적으로 삭제됨"
-              ));
+              .body("User가 성공적으로 삭제됨");
     } catch (NoSuchElementException e) {
       return ResponseEntity
               .status(HttpStatus.NOT_FOUND)
@@ -236,18 +232,13 @@ public class UserController {
           )
   )
   @GetMapping("")
-  public ResponseEntity<CodeMessageResponseDto<?>> findAll() {
+  public ResponseEntity<?> findAll() {
     try {
       List<UserDto> users = userService.findAll();
       return ResponseEntity
               .status(HttpStatus.OK)
-              .body(new CodeMessageResponseDto<>(
-                      ResponseCode.SUCCESS,
-                      ResponseMessage.SUCCESS,
-                      users
-              ));
+              .body(users);
     } catch (RuntimeException e) {
-      e.printStackTrace();
       return ResponseEntity
               .status(HttpStatus.INTERNAL_SERVER_ERROR)
               .body(CodeMessageResponseDto.error(
@@ -286,13 +277,13 @@ public class UserController {
           schema = @Schema(type = "string", format = "uuid")
   )
   @PatchMapping("/{userId}/userStatus")
-  public ResponseEntity<CodeMessageResponseDto<?>> updateUserStatusByUserId(@PathVariable("userId") UUID userId,
+  public ResponseEntity<?> updateUserStatusByUserId(@PathVariable("userId") UUID userId,
       @RequestBody UserStatusUpdateRequest request) {
     try {
       UserStatus updatedUserStatus = userStatusService.updateByUserId(userId, request);
       return ResponseEntity
               .status(HttpStatus.OK)
-              .body(CodeMessageResponseDto.success(updatedUserStatus));
+              .body(updatedUserStatus);
     } catch (NoSuchElementException e) {
       return ResponseEntity
               .status(HttpStatus.NOT_FOUND)

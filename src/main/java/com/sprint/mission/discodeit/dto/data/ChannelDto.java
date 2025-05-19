@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.dto.data;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.sprint.mission.discodeit.entity.ChannelType;
 
 import java.time.Instant;
@@ -12,6 +13,7 @@ public record ChannelDto(
     String name,
     String description,
     List<UUID> participantIds,
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     Instant lastMessageAt
 ) {
 

@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
+import lombok.ToString;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -8,12 +10,15 @@ import java.util.List;
 import java.util.UUID;
 
 @Getter
+@ToString
 public class Message implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
   private UUID id;
+  @JsonFormat(shape = JsonFormat.Shape.STRING)
   private Instant createdAt;
+  @JsonFormat(shape = JsonFormat.Shape.STRING)
   private Instant updatedAt;
   //
   private String content;
