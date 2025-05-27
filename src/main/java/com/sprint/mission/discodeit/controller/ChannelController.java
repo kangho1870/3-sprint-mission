@@ -55,7 +55,7 @@ public class ChannelController {
   public ResponseEntity<?> create(@RequestBody PublicChannelCreateRequest request) {
 
       try {
-          Channel createdChannel = channelService.create(request);
+          ChannelDto createdChannel = channelService.create(request);
           return ResponseEntity
                   .status(HttpStatus.CREATED)
                   .body(createdChannel);
@@ -84,7 +84,7 @@ public class ChannelController {
   @PostMapping("/private")
   public ResponseEntity<?> create(@RequestBody PrivateChannelCreateRequest request) {
       try {
-          Channel createdChannel = channelService.create(request);
+          ChannelDto createdChannel = channelService.create(request);
           return ResponseEntity
                   .status(HttpStatus.CREATED)
                   .body(createdChannel);
@@ -145,7 +145,7 @@ public class ChannelController {
   public ResponseEntity<?> update(@PathVariable("channelId") UUID channelId,
       @RequestBody PublicChannelUpdateRequest request) {
       try {
-          Channel updatedChannel = channelService.update(channelId, request);
+          ChannelDto updatedChannel = channelService.update(channelId, request);
           return ResponseEntity
                   .status(HttpStatus.OK)
                   .body(updatedChannel);

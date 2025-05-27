@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.dto.CodeMessageResponseDto;
 import com.sprint.mission.discodeit.dto.ResponseCode;
 import com.sprint.mission.discodeit.dto.ResponseMessage;
+import com.sprint.mission.discodeit.dto.data.MessageDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
@@ -100,7 +101,7 @@ public class MessageController {
                           })
                           .toList())
                   .orElse(new ArrayList<>());
-          Message createdMessage = messageService.create(messageCreateRequest, attachmentRequests);
+          MessageDto createdMessage = messageService.create(messageCreateRequest, attachmentRequests);
           return ResponseEntity
                   .status(HttpStatus.CREATED)
                   .body(createdMessage);
@@ -162,7 +163,7 @@ public class MessageController {
       @RequestBody MessageUpdateRequest request) {
 
       try {
-          Message updatedMessage = messageService.update(messageId, request);
+          MessageDto updatedMessage = messageService.update(messageId, request);
           return ResponseEntity
                   .status(HttpStatus.OK)
                   .body(updatedMessage);
@@ -265,7 +266,7 @@ public class MessageController {
   public ResponseEntity<?> findAllByChannelId(
       @RequestParam("channelId") UUID channelId) {
       try {
-          List<Message> messages = messageService.findAllByChannelId(channelId);
+          List<MessageDto> messages = messageService.findAllByChannelId(channelId);
           return ResponseEntity
                   .status(HttpStatus.OK)
                   .body(messages);

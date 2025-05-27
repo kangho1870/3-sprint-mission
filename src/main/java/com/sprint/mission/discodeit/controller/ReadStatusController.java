@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.dto.CodeMessageResponseDto;
 import com.sprint.mission.discodeit.dto.ResponseCode;
 import com.sprint.mission.discodeit.dto.ResponseMessage;
+import com.sprint.mission.discodeit.dto.data.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.ReadStatus;
@@ -77,7 +78,7 @@ public class ReadStatusController {
   @PostMapping("")
   public ResponseEntity<?> create(@RequestBody ReadStatusCreateRequest request) {
       try {
-          ReadStatus createdReadStatus = readStatusService.create(request);
+          ReadStatusDto createdReadStatus = readStatusService.create(request);
           return ResponseEntity
                   .status(HttpStatus.CREATED)
                   .body(createdReadStatus);
@@ -144,7 +145,7 @@ public class ReadStatusController {
   public ResponseEntity<?> update(@PathVariable("readStatusId") UUID readStatusId,
       @RequestBody ReadStatusUpdateRequest request) {
       try {
-          ReadStatus updatedReadStatus = readStatusService.update(readStatusId, request);
+          ReadStatusDto updatedReadStatus = readStatusService.update(readStatusId, request);
           return ResponseEntity
                   .status(HttpStatus.OK)
                   .body(updatedReadStatus);
@@ -189,7 +190,7 @@ public class ReadStatusController {
   @GetMapping("")
   public ResponseEntity<?> findAllByUserId(@RequestParam("userId") UUID userId) {
       try {
-          List<ReadStatus> readStatuses = readStatusService.findAllByUserId(userId);
+          List<ReadStatusDto> readStatuses = readStatusService.findAllByUserId(userId);
           return ResponseEntity
                   .status(HttpStatus.OK)
                   .body(readStatuses);

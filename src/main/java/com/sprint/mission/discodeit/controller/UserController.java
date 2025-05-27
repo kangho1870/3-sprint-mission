@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.CodeMessageResponseDto;
 import com.sprint.mission.discodeit.dto.ResponseCode;
 import com.sprint.mission.discodeit.dto.ResponseMessage;
 import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.data.UserStatusDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
@@ -79,7 +80,7 @@ public class UserController {
     try {
       Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
               .flatMap(this::resolveProfileRequest);
-      User createdUser = userService.create(userCreateRequest, profileRequest);
+      UserDto createdUser = userService.create(userCreateRequest, profileRequest);
 
       return ResponseEntity
               .status(HttpStatus.CREATED)
@@ -154,7 +155,7 @@ public class UserController {
     try {
       Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
               .flatMap(this::resolveProfileRequest);
-      User updatedUser = userService.update(userId, userUpdateRequest, profileRequest);
+      UserDto updatedUser = userService.update(userId, userUpdateRequest, profileRequest);
       return ResponseEntity
               .status(HttpStatus.OK)
               .body(updatedUser);
@@ -280,7 +281,7 @@ public class UserController {
   public ResponseEntity<?> updateUserStatusByUserId(@PathVariable("userId") UUID userId,
       @RequestBody UserStatusUpdateRequest request) {
     try {
-      UserStatus updatedUserStatus = userStatusService.updateByUserId(userId, request);
+      UserStatusDto updatedUserStatus = userStatusService.updateByUserId(userId, request);
       return ResponseEntity
               .status(HttpStatus.OK)
               .body(updatedUserStatus);
