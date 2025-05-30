@@ -50,7 +50,6 @@ public class Message extends BaseUpdatableEntity {
   )
   private List<BinaryContent> attachments = new ArrayList<>();
 
-
   public Message(String content, Channel channel, User author) {
     this.content = content;
     this.channel = channel;

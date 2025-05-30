@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity.base;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,6 +13,7 @@ import java.time.Instant;
 @NoArgsConstructor
 public abstract class BaseUpdatableEntity extends BaseEntity {
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     @LastModifiedDate
     private Instant updatedAt;
 }

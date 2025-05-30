@@ -24,12 +24,16 @@ spring:
         highlight_sql: true
         use_sql_comments: true
         default_schema: discodeit
+    open-in-view: false
 
-#discodeit:
-#  repository:
-#    type: file   # jcf | file
-#    file-directory: .discodeit
-
+discodeit:
+  repository:
+    type: file   # jcf | file
+    file-directory: .discodeit
+  storage:
+    type: local
+    local:
+      root-path: ./upload
 # 2. logging config
 logging:
   level:

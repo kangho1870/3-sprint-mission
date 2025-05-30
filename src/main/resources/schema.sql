@@ -57,7 +57,6 @@ CREATE TABLE tbl_binary_content (
     file_name varchar(255) not null,
     size bigint not null,
     content_type varchar(100) not null,
-    bytes bytea not null,
     created_at timestamptz not null
 );
 
@@ -70,7 +69,3 @@ ALTER TABLE tbl_message ADD FOREIGN KEY (author_id) REFERENCES tbl_user(id) ON D
 ALTER TABLE tbl_message ADD FOREIGN KEY (channel_id) REFERENCES tbl_channel(id) ON DELETE CASCADE;
 ALTER TABLE tbl_message_attachment ADD FOREIGN KEY (message_id) REFERENCES tbl_message(id) ON DELETE CASCADE;
 ALTER TABLE tbl_message_attachment ADD FOREIGN KEY (attachment_id) REFERENCES tbl_binary_content(id) ON DELETE CASCADE;
-
-
-
-

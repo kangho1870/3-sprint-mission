@@ -50,7 +50,7 @@ public class User extends BaseUpdatableEntity {
   @JoinColumn(name = "profile_id")
   private BinaryContent profile;
 
-  @OneToOne(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
+  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   private UserStatus userStatus;
 
   public User(String username, String email, String password, BinaryContent profile) {
@@ -63,7 +63,6 @@ public class User extends BaseUpdatableEntity {
   public void update(String newUsername, String newEmail, String newPassword, BinaryContent newProfile) {
     if (newUsername != null && !newUsername.equals(this.username)) {
       this.username = newUsername;
-      System.out.println("변경 완료");
     }
 
     if (newEmail != null && !newEmail.equals(this.email)) {

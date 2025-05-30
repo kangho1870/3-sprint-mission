@@ -42,7 +42,7 @@ public class Channel extends BaseUpdatableEntity {
           minLength = 1,
           maxLength = 100
   )
-  @Column(name = "name", nullable = false, length = 100)
+  @Column(name = "name", length = 100)
   private String name;
 
   @Schema(
@@ -50,7 +50,7 @@ public class Channel extends BaseUpdatableEntity {
           type = "string",
           example = "일반적인 대화를 나누는 채널입니다"
   )
-  @Column(name = "description", nullable = true, length = 1000)
+  @Column(name = "description", length = 1000)
   private String description;
 
   public Channel(ChannelType type, String name, String description) {

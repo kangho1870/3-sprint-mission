@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity.base;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -22,6 +23,7 @@ public abstract class BaseEntity {
     @GeneratedValue
     private UUID id;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     @CreatedDate
     private Instant createdAt;
 }

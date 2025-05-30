@@ -3,6 +3,8 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.LoginRequest;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.PasswordValidException;
+import com.sprint.mission.discodeit.exception.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
@@ -24,11 +26,10 @@ public class BasicAuthService implements AuthService {
     String password = loginRequest.password();
 
     User user = userRepository.findByUsername(username)
-        .orElseThrow(
-            () -> new NoSuchElementException("User with username " + username + " not found"));
+        .orElseThrow(UserNotFoundException::new);
 
     if (!user.getPassword().equals(password)) {
-      throw new IllegalArgumentException("Wrong password");
+      throw new PasswordValidException();
     }
 
     return userMapper.toDto(user);

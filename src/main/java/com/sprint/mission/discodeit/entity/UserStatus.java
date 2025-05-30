@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 import java.io.Serializable;
@@ -21,6 +22,7 @@ import java.util.UUID;
 @Table(name = "tbl_user_status")
 @NoArgsConstructor
 @Getter
+@Setter
 @ToString(exclude = {"user"})
 public class UserStatus extends BaseUpdatableEntity {
 

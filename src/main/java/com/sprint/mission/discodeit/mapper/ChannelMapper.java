@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.mapstruct.Mapper;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
