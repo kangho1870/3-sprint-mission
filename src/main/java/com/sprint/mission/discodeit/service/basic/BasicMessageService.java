@@ -69,6 +69,7 @@ public class BasicMessageService implements MessageService {
     return messageMapper.toDto(messageRepository.save(message));
   }
 
+  @Transactional(readOnly = true)
   @Override
   public MessageDto find(UUID messageId) {
     return messageMapper.toDto(messageRepository.findById(messageId)
@@ -76,6 +77,7 @@ public class BasicMessageService implements MessageService {
     );
   }
 
+  @Transactional(readOnly = true)
   @Override
   public PageResponse<?> findAllByChannelId(UUID channelId, Instant cursor, Pageable pageable) {
     pageable = PageRequest.of(0, pageable.getPageSize(), Sort.by("createdAt").descending());

@@ -42,6 +42,7 @@ public class BasicChannelService implements ChannelService {
     return channelMapper.toDto(channelRepository.save(channel));
   }
 
+  @Transactional
   @Override
   public ChannelDto create(PrivateChannelCreateRequest request) {
     Channel channel = new Channel(ChannelType.PRIVATE, null, null);
@@ -57,6 +58,7 @@ public class BasicChannelService implements ChannelService {
     return channelMapper.toDto(createdChannel);
   }
 
+  @Transactional(readOnly = true)
   @Override
   public ChannelDto find(UUID channelId) {
     return channelRepository.findById(channelId)
@@ -64,6 +66,7 @@ public class BasicChannelService implements ChannelService {
         .orElseThrow(ChannelNotFoundException::new);
   }
 
+  @Transactional(readOnly = true)
   @Override
   public List<ChannelDto> findAllByUserId(UUID userId) {
     List<UUID> mySubscribedChannelIds = readStatusRepository.findAllByUserId(userId).stream()
@@ -80,6 +83,7 @@ public class BasicChannelService implements ChannelService {
         .toList();
   }
 
+  @Transactional
   @Override
   public ChannelDto update(UUID channelId, PublicChannelUpdateRequest request) {
     String newName = request.newName();

@@ -74,6 +74,7 @@ public class BasicUserService implements UserService {
     return userMapper.toDto(createdUser);
   }
 
+  @Transactional(readOnly = true)
   @Override
   public UserDto find(UUID userId) {
     return userRepository.findById(userId)
@@ -81,6 +82,7 @@ public class BasicUserService implements UserService {
         .orElseThrow(UserNotFoundException::new);
   }
 
+  @Transactional(readOnly = true)
   @Override
   public List<UserDto> findAll() {
     return userRepository.findAll()
@@ -145,7 +147,7 @@ public class BasicUserService implements UserService {
       throw new BaseException() {
         @Override
         public String getCode() {
-          return "DUE";
+          return "Duplicate Email";
         }
 
         @Override
@@ -163,7 +165,7 @@ public class BasicUserService implements UserService {
       throw new BaseException() {
         @Override
         public String getCode() {
-          return "DUN";
+          return "Duplicate Username";
         }
 
         @Override

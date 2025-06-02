@@ -39,12 +39,14 @@ public class BasicBinaryContentService implements BinaryContentService {
     return binaryContentMapper.toDto(binaryContentRepository.save(binaryContent));
   }
 
+  @Transactional(readOnly = true)
   @Override
   public BinaryContentDto find(UUID binaryContentId) {
     return binaryContentMapper.toDto(binaryContentRepository.findById(binaryContentId)
             .orElseThrow(BinaryContentNotFoundException::new));
   }
 
+  @Transactional(readOnly = true)
   @Override
   public List<BinaryContentDto> findAllByIdIn(List<UUID> binaryContentIds) {
     return binaryContentRepository.findAllByIdIn(binaryContentIds).stream().map(binaryContentMapper::toDto).toList();

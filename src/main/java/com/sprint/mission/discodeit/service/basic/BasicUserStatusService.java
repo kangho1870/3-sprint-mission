@@ -44,11 +44,13 @@ public class BasicUserStatusService implements UserStatusService {
     return userStatusRepository.save(userStatus);
   }
 
+  @Transactional(readOnly = true)
   @Override
   public UserStatus find(UUID userStatusId) {
     return userStatusRepository.findById(userStatusId).orElseThrow(UserStatusNotFoundException::new);
   }
 
+  @Transactional(readOnly = true)
   @Override
   public List<UserStatus> findAll() {
     return userStatusRepository.findAll();
