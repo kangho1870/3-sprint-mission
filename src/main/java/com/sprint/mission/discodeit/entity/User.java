@@ -77,4 +77,10 @@ public class User extends BaseUpdatableEntity {
       this.profile = newProfile;
     }
   }
+
+  // 양방향 편의 메소드
+  public void setUserStatus(UserStatus userStatus) {
+    this.userStatus = userStatus;
+    userStatus.setUser(this);
+  }
 }

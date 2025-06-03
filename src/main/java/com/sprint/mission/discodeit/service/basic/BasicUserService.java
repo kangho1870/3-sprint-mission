@@ -69,7 +69,6 @@ public class BasicUserService implements UserService {
     UserStatus userStatus = new UserStatus(createdUser, now);
 
     createdUser.setUserStatus(userStatus);
-    userStatus.setUser(createdUser);
 
     return userMapper.toDto(createdUser);
   }
