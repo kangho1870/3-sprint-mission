@@ -1,8 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.CodeMessageResponseDto;
-import com.sprint.mission.discodeit.dto.ResponseCode;
-import com.sprint.mission.discodeit.dto.ResponseMessage;
+import com.sprint.mission.discodeit.dto.ErrorResponse;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.data.UserStatusDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
@@ -23,18 +21,17 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -74,42 +71,16 @@ public class UserController {
   )
   @PostMapping("")
   public ResponseEntity<?> create(
-          @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
+          @Valid @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
           @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
-    try {
-      Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
-              .flatMap(this::resolveProfileRequest);
-      UserDto createdUser = userService.create(userCreateRequest, profileRequest);
+    Optional<BinaryContentCreateRequest> profileRequest = Optional.ofNullable(profile)
+            .flatMap(this::resolveProfileRequest);
+    UserDto createdUser = userService.create(userCreateRequest, profileRequest);
 
-      return ResponseEntity
-              .status(HttpStatus.CREATED)
-              .body(createdUser);
-
-    } catch (IllegalArgumentException e) {
-      return ResponseEntity
-              .status(HttpStatus.BAD_REQUEST)
-              .body(CodeMessageResponseDto.error(
-                      ResponseCode.DUPLICATE_USER,
-                      ResponseMessage.DUPLICATE_USER
-              ));
-
-    } catch (RuntimeException e) {
-      return ResponseEntity
-              .status(HttpStatus.BAD_REQUEST)
-              .body(CodeMessageResponseDto.error(
-                      ResponseCode.FILE_PROCESSING_ERROR,
-                      ResponseMessage.FILE_PROCESSING_ERROR
-              ));
-
-    } catch (Exception e) {
-      return ResponseEntity
-              .status(HttpStatus.INTERNAL_SERVER_ERROR)
-              .body(CodeMessageResponseDto.error(
-                      ResponseCode.INTERNAL_ERROR,
-                      ResponseMessage.INTERNAL_SERVER_ERROR
-              ));
-    }
+    return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .body(createdUser);
   }
 
 

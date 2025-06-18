@@ -5,9 +5,9 @@ import com.sprint.mission.discodeit.dto.request.UserStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.exception.DuplicateUserStatusException;
-import com.sprint.mission.discodeit.exception.UserNotFoundException;
-import com.sprint.mission.discodeit.exception.UserStatusNotFoundException;
+import com.sprint.mission.discodeit.exception.userStatus.DuplicateUserStatusException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.exception.userStatus.UserStatusNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -18,8 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -33,10 +31,10 @@ public class BasicUserStatusService implements UserStatusService {
   @Transactional
   @Override
   public UserStatus create(UserStatusCreateRequest request) {
-    User user = userRepository.findById(request.userId()).orElseThrow(UserNotFoundException::new);
+    User user = userRepository.findById(request.userId()).orElseThrow(() -> new UserNotFoundException(request.userId()));
 
     if (userStatusRepository.findByUserId(user.getId()).isPresent()) {
-      throw new DuplicateUserStatusException();
+      throw new DuplicateUserStatusException(user.getUserStatus().getId());
     }
 
     Instant lastActiveAt = request.lastActiveAt();
@@ -47,7 +45,7 @@ public class BasicUserStatusService implements UserStatusService {
   @Transactional(readOnly = true)
   @Override
   public UserStatus find(UUID userStatusId) {
-    return userStatusRepository.findById(userStatusId).orElseThrow(UserStatusNotFoundException::new);
+    return userStatusRepository.findById(userStatusId).orElseThrow(() -> new UserNotFoundException(userStatusId));
   }
 
   @Transactional(readOnly = true)
@@ -60,7 +58,7 @@ public class BasicUserStatusService implements UserStatusService {
   @Override
   public UserStatusDto update(UUID userStatusId, UserStatusUpdateRequest request) {
 
-    UserStatus userStatus = userStatusRepository.findById(userStatusId).orElseThrow(UserStatusNotFoundException::new);
+    UserStatus userStatus = userStatusRepository.findById(userStatusId).orElseThrow(() -> new UserNotFoundException(userStatusId));
     userStatus.update(request.newLastActiveAt());
 
     return userStatusMapper.toDto(userStatus);
@@ -70,7 +68,7 @@ public class BasicUserStatusService implements UserStatusService {
   @Override
   public UserStatusDto updateByUserId(UUID userId, UserStatusUpdateRequest request) {
 
-    UserStatus userStatus = userStatusRepository.findByUserId(userId).orElseThrow(UserStatusNotFoundException::new);
+    UserStatus userStatus = userStatusRepository.findByUserId(userId).orElseThrow(() -> new UserNotFoundException(userId));
     userStatus.update(request.newLastActiveAt());
 
     return userStatusMapper.toDto(userStatus);
@@ -80,7 +78,7 @@ public class BasicUserStatusService implements UserStatusService {
   @Override
   public void delete(UUID userStatusId) {
     if (!userStatusRepository.existsById(userStatusId)) {
-      throw new UserStatusNotFoundException();
+      throw new UserStatusNotFoundException(userStatusId);
     }
     userStatusRepository.deleteById(userStatusId);
   }

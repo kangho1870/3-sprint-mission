@@ -6,9 +6,9 @@ import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.entity.*;
-import com.sprint.mission.discodeit.exception.ChannelNotFoundException;
-import com.sprint.mission.discodeit.exception.MessageNotFoundException;
-import com.sprint.mission.discodeit.exception.UserNotFoundException;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -23,9 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -44,9 +42,9 @@ public class BasicMessageService implements MessageService {
   @Override
   public MessageDto create(MessageCreateRequest messageCreateRequest,
                            List<BinaryContentCreateRequest> binaryContentCreateRequests) {
-    Channel channel = channelRepository.findById(messageCreateRequest.channelId()).orElseThrow(ChannelNotFoundException::new);
+    Channel channel = channelRepository.findById(messageCreateRequest.channelId()).orElseThrow(() -> new ChannelNotFoundException(messageCreateRequest.channelId()));
 
-    User author = userRepository.findById(messageCreateRequest.authorId()).orElseThrow(UserNotFoundException::new);
+    User author = userRepository.findById(messageCreateRequest.authorId()).orElseThrow(() -> new UserNotFoundException(messageCreateRequest.authorId()));
 
     Message message = new Message(
             messageCreateRequest.content(),
@@ -73,7 +71,7 @@ public class BasicMessageService implements MessageService {
   @Override
   public MessageDto find(UUID messageId) {
     return messageMapper.toDto(messageRepository.findById(messageId)
-            .orElseThrow(MessageNotFoundException::new)
+            .orElseThrow(() -> new MessageNotFoundException(messageId))
     );
   }
 
@@ -95,7 +93,7 @@ public class BasicMessageService implements MessageService {
   @Override
   public MessageDto update(UUID messageId, MessageUpdateRequest request) {
     String newContent = request.newContent();
-    Message message = messageRepository.findById(messageId).orElseThrow(MessageNotFoundException::new);
+    Message message = messageRepository.findById(messageId).orElseThrow(() -> new MessageNotFoundException(messageId));
     message.update(newContent);
     return messageMapper.toDto(messageRepository.save(message));
   }
@@ -103,7 +101,7 @@ public class BasicMessageService implements MessageService {
   @Transactional
   @Override
   public void delete(UUID messageId) {
-    Message message = messageRepository.findById(messageId).orElseThrow(MessageNotFoundException::new);
+    Message message = messageRepository.findById(messageId).orElseThrow(() -> new MessageNotFoundException(messageId));
 
     message.getAttachments()
             .forEach(binaryContent ->

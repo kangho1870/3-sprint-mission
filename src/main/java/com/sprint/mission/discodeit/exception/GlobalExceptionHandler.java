@@ -1,24 +1,28 @@
 package com.sprint.mission.discodeit.exception;
 
-import com.sprint.mission.discodeit.dto.CodeMessageResponseDto;
-import com.sprint.mission.discodeit.dto.ResponseCode;
-import com.sprint.mission.discodeit.dto.ResponseMessage;
+import com.sprint.mission.discodeit.dto.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.NoSuchElementException;
-
-@ControllerAdvice
+@RestControllerAdvice
 @ResponseBody
 public class GlobalExceptionHandler {
 
-  @ExceptionHandler(BaseException.class)
-  public ResponseEntity<CodeMessageResponseDto<?>> handleBaseException(BaseException ex) {
-    return ResponseEntity.status(ex.getHttpStatus())
-            .body(CodeMessageResponseDto.error(ex.getCode(), ex.getMessage()));
+  @ExceptionHandler(DiscodeitException.class)
+  public ResponseEntity<ErrorResponse> handleBaseException(DiscodeitException ex) {
+
+    return ResponseEntity.status(ex.getErrorCode().getStatus())
+            .body(new ErrorResponse(
+                    ex.getTimestamp(),
+                    ex.getErrorCode().toString(),
+                    ex.getErrorCode().getMessage(),
+                    ex.getDetails(),
+                    ex.getClass().getSimpleName(),
+                    ex.getErrorCode().getStatus().value()
+            ));
   }
 
   @ExceptionHandler(Exception.class)

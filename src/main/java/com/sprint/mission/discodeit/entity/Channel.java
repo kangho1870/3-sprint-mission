@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.entity.base.BaseEntity;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcType;
@@ -20,7 +21,7 @@ import java.util.UUID;
         description = "채널 정보를 담고 있는 엔티티"
 )
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "tbl_channel")
 @Entity
 public class Channel extends BaseUpdatableEntity {

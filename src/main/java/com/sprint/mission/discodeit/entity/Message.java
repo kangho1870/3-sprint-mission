@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -21,7 +22,7 @@ import java.util.UUID;
         description = "채널 내 메시지 정보를 담고 있는 엔티티"
 )
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "tbl_message")
 public class Message extends BaseUpdatableEntity {

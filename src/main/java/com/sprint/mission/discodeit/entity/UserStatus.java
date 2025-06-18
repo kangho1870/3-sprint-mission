@@ -4,10 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import java.io.Serializable;
 import java.time.Duration;
@@ -20,7 +17,7 @@ import java.util.UUID;
 )
 @Entity
 @Table(name = "tbl_user_status")
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Setter
 @ToString(exclude = {"user"})
@@ -37,6 +34,7 @@ public class UserStatus extends BaseUpdatableEntity {
           example = "2024-03-20T09:12:28Z"
   )
   @JsonFormat(shape = JsonFormat.Shape.STRING)
+  @Column(columnDefinition = "timestamp with time zone", nullable = false)
   private Instant lastActiveAt;
 
 

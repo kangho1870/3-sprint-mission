@@ -1,8 +1,5 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.CodeMessageResponseDto;
-import com.sprint.mission.discodeit.dto.ResponseCode;
-import com.sprint.mission.discodeit.dto.ResponseMessage;
 import com.sprint.mission.discodeit.dto.data.ChannelDto;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
@@ -19,13 +16,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Tag(
@@ -52,7 +49,7 @@ public class ChannelController {
           )
   )
   @PostMapping("/public")
-  public ResponseEntity<ChannelDto> create(@RequestBody PublicChannelCreateRequest request) {
+  public ResponseEntity<ChannelDto> create(@Valid @RequestBody PublicChannelCreateRequest request) {
 
       ChannelDto createdChannel = channelService.create(request);
       return ResponseEntity

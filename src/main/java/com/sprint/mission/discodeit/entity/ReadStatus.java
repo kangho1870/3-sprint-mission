@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -16,7 +17,7 @@ import java.util.UUID;
         description = "사용자의 채널별 메시지 읽음 상태 정보를 담고 있는 엔티티"
 )
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "tbl_read_status")
 public class ReadStatus extends BaseUpdatableEntity {

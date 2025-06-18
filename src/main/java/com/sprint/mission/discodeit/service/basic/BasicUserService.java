@@ -7,8 +7,9 @@ import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.exception.BaseException;
-import com.sprint.mission.discodeit.exception.UserNotFoundException;
+import com.sprint.mission.discodeit.exception.DiscodeitException;
+import com.sprint.mission.discodeit.exception.user.DuplicateUserException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -22,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -78,7 +78,7 @@ public class BasicUserService implements UserService {
   public UserDto find(UUID userId) {
     return userRepository.findById(userId)
         .map(userMapper::toDto)
-        .orElseThrow(UserNotFoundException::new);
+        .orElseThrow(() -> new UserNotFoundException(userId));
   }
 
   @Transactional(readOnly = true)
@@ -94,7 +94,7 @@ public class BasicUserService implements UserService {
   @Override
   public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest,
       Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
-    User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+    User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
 
     String newUsername = userUpdateRequest.newUsername();
     String newEmail = userUpdateRequest.newEmail();
@@ -130,7 +130,7 @@ public class BasicUserService implements UserService {
   @Transactional
   @Override
   public void delete(UUID userId) {
-    User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+    User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
 
     Optional.ofNullable(user.getProfile())
             .ifPresent(profile -> {
@@ -142,41 +142,8 @@ public class BasicUserService implements UserService {
   }
 
   private void valid(String newUsername, String newEmail) {
-    if (userRepository.existsByEmail(newEmail)) {
-      throw new BaseException() {
-        @Override
-        public String getCode() {
-          return "Duplicate Email";
-        }
-
-        @Override
-        public String getMessage() {
-          return "Duplicate email: " + newEmail;
-        }
-
-        @Override
-        public HttpStatus getHttpStatus() {
-          return HttpStatus.CONFLICT;
-        }
-      };
-    }
-    if (userRepository.existsByUsername(newUsername)) {
-      throw new BaseException() {
-        @Override
-        public String getCode() {
-          return "Duplicate Username";
-        }
-
-        @Override
-        public String getMessage() {
-          return "Duplicate username: " + newUsername;
-        }
-
-        @Override
-        public HttpStatus getHttpStatus() {
-          return HttpStatus.CONFLICT;
-        }
-      };
+    if (userRepository.existsByEmail(newEmail) || userRepository.existsByUsername(newUsername)) {
+        throw new DuplicateUserException(newUsername, newEmail);
     }
   }
 }

@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.entity;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,9 +14,8 @@ import lombok.Setter;
 )
 @Entity
 @Table(name = "tbl_user")
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Setter
 public class User extends BaseUpdatableEntity {
 
   @Schema(
@@ -46,7 +46,7 @@ public class User extends BaseUpdatableEntity {
   @Column(name = "password", nullable = false, length = 100)
   private String password;
 
-  @OneToOne
+  @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "profile_id")
   private BinaryContent profile;
 

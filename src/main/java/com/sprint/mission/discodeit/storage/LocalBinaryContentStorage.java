@@ -1,8 +1,5 @@
 package com.sprint.mission.discodeit.storage;
 
-import com.sprint.mission.discodeit.dto.CodeMessageResponseDto;
-import com.sprint.mission.discodeit.dto.ResponseCode;
-import com.sprint.mission.discodeit.dto.ResponseMessage;
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
