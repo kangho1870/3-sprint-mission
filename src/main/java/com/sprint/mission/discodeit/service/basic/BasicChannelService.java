@@ -67,6 +67,8 @@ public class BasicChannelService implements ChannelService {
   @Transactional(readOnly = true)
   @Override
   public List<ChannelDto> findAllByUserId(UUID userId) {
+    userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
+
     List<UUID> mySubscribedChannelIds = readStatusRepository.findAllByUserId(userId).stream()
         .map(ReadStatus::getChannel)
             .<UUID>map(Channel::getId)

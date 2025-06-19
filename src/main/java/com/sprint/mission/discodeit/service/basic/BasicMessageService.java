@@ -78,6 +78,8 @@ public class BasicMessageService implements MessageService {
   @Transactional(readOnly = true)
   @Override
   public PageResponse<?> findAllByChannelId(UUID channelId, Instant cursor, Pageable pageable) {
+    channelRepository.findById(channelId).orElseThrow(() -> new ChannelNotFoundException(channelId));
+
     pageable = PageRequest.of(0, pageable.getPageSize(), Sort.by("createdAt").descending());
 
     if (cursor != null) {
