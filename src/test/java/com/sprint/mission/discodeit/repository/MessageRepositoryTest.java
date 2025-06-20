@@ -124,7 +124,7 @@ public class MessageRepositoryTest {
         System.out.println(cursorTarget.getCreatedAt());
         System.out.println(pageable);
         System.out.println(cursor);
-        Slice<Message> result = messageRepository.findMessagesBeforeCursor(
+        Slice<Message> result = messageRepository.findByChannelIdAndCreatedAtLessThanOrderByCreatedAtDesc(
                 channelId, cursor, pageable);
 
 
