@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcType;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import org.springframework.context.annotation.Profile;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -32,8 +33,7 @@ public class Channel extends BaseUpdatableEntity {
           example = "PUBLIC"
   )
   @Enumerated(EnumType.STRING)
-  @Column(name = "type", nullable = false, length = 10, columnDefinition = "discodeit.channel_type")
-  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+  @Column(name = "type", nullable = false, length = 10)
   private ChannelType type;
 
   @Schema(
@@ -66,6 +66,21 @@ public class Channel extends BaseUpdatableEntity {
     }
     if (newDescription != null && !newDescription.equals(this.description)) {
       this.description = newDescription;
+    }
+  }
+
+  @Profile("!test")
+  @Converter(autoApply = true)
+  public class ChannelTypePostgresConverter implements AttributeConverter<ChannelType, String> {
+
+    @Override
+    public String convertToDatabaseColumn(ChannelType attribute) {
+      return attribute.name();
+    }
+
+    @Override
+    public ChannelType convertToEntityAttribute(String dbData) {
+      return ChannelType.valueOf(dbData);
     }
   }
 }

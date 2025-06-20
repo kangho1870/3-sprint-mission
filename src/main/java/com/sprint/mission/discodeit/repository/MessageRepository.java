@@ -18,8 +18,6 @@ import java.util.UUID;
 public interface MessageRepository extends JpaRepository<Message, UUID> {
     @EntityGraph(attributePaths = {"author", "author.userStatus", "author.profile", "attachments"})
     public List<Message> findAllByChannelId(UUID channelId);
-    @EntityGraph(attributePaths = {"author", "author.userStatus", "author.profile", "attachments"})
-    public Slice<Message> findAllByChannelId(UUID channelId, Pageable pageable);
 
     @EntityGraph(attributePaths = {"author", "author.userStatus", "author.profile", "attachments"})
     public Slice<Message> findByChannelIdAndCreatedAtLessThanOrderByCreatedAtDesc(UUID channelId, Instant cursor, Pageable pageable);

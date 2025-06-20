@@ -9,7 +9,9 @@ spring:
     driver-class-name: org.postgresql.Driver
     hikari:
       connection-init-sql: SET SESSION hibernate.jdbc.lob.non_contextual_creation=true
-
+  jpa:
+    hibernate:
+      ddl-auto: create
 logging:
   level:
     root: info

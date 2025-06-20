@@ -17,7 +17,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
   @Override
   List<User> findAll();
 
-  @Query("SELECT u FROM User u JOIN FETCH u.userStatus JOIN FETCH u.profile")
+  @Query("SELECT u FROM User u JOIN FETCH u.userStatus JOIN FETCH u.profile WHERE u.id = :uuid")
   @Override
   Optional<User> findById(UUID uuid);
 
