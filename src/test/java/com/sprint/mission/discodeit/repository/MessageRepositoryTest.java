@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.repository;
 
+import com.sprint.mission.discodeit.config.TestJpaAuditingConfig;
 import com.sprint.mission.discodeit.entity.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,6 +28,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.*;
 
 @ActiveProfiles("test")
+@Import(TestJpaAuditingConfig.class)
 @DataJpaTest
 @EntityScan(basePackages = "com.sprint.mission.discodeit.entity")
 @DisplayName("MessageRepository 슬라이스 테스트")
@@ -38,6 +40,7 @@ public class MessageRepositoryTest {
     private TestEntityManager em;
 
     private User user;
+
     private Channel channel;
 
     @BeforeEach
@@ -61,9 +64,9 @@ public class MessageRepositoryTest {
         for (int i = 0; i < 3; i++) {
             Message message = new Message("내용 " + i, channel, user);
             em.persist(message);
+            em.flush();
             try {
                 Thread.sleep(1500);
-                em.flush();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -114,22 +117,13 @@ public class MessageRepositoryTest {
         Message cursorTarget = messages.get(0);
         Instant cursor = cursorTarget.getCreatedAt();
         cursor = cursor.atOffset(ZoneOffset.UTC).toInstant();
-        System.out.println("현재 커서: " + cursor);
-        for (Message message : messages) {
-            System.out.println("메세지 내용 : " + message.getContent() + "create_at : " + message.getCreatedAt());
-        }
 
         // when
-        System.out.println(cursorTarget.getId());
-        System.out.println(cursorTarget.getCreatedAt());
-        System.out.println(pageable);
-        System.out.println(cursor);
         Slice<Message> result = messageRepository.findByChannelIdAndCreatedAtLessThanOrderByCreatedAtDesc(
                 channelId, cursor, pageable);
 
 
         // then
-        System.out.println(result.getContent().size());
         assertThat(result.getContent()).hasSize(2);
         assertThat(result.getContent().get(0).getContent()).isEqualTo("내용 1");
     }

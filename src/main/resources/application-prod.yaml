@@ -1,5 +1,5 @@
 server:
-  port: 80
+  port: 8080
 
 spring:
   datasource:
@@ -9,7 +9,13 @@ spring:
     driver-class-name: org.postgresql.Driver
     hikari:
       connection-init-sql: SET SESSION hibernate.jdbc.lob.non_contextual_creation=true
-
+  jpa:
+    hibernate:
+      ddl-auto: update
+  boot:
+    admin:
+      client:
+        url: ${SPRING_BOOT_ADMIN_CLIENT_URL:http://localhost:9090}
 logging:
   level:
     root: info

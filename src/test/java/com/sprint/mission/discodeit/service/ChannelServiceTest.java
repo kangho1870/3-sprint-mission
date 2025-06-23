@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateDeniedException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -192,7 +193,10 @@ public class ChannelServiceTest {
     @DisplayName("정상적인 요청을 통해 해당 사용자의 채널 목록을 조회할 수 있다")
     void shouldFindAllChannelsByUserId() {
         // given
-        UUID userId = UUID.randomUUID();
+        User user = new User("test", "test@gmail.com", "000000001", null);
+        UUID userId = user.getId();
+
+        given(userRepository.findById(userId)).willReturn(Optional.of(user));
 
         Channel publicChannel = new Channel(ChannelType.PUBLIC, "public", "공개 채널");
         UUID publicChannelId = UUID.randomUUID();

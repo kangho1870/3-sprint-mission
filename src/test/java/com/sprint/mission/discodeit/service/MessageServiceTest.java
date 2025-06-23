@@ -224,6 +224,7 @@ public class MessageServiceTest {
                 .map(msg -> new MessageDto(UUID.randomUUID(), Instant.now(), Instant.now(), msg.getContent(), channelId, null, null))
                 .toList();
 
+        given(channelRepository.findById(channelId)).willReturn(Optional.of(channel));
         given(messageRepository.findByChannelIdOrderByCreatedAtDesc(channelId, pageable))
                 .willReturn(slice);
         given(messageMapper.toDto(any())).willAnswer(invocation -> {

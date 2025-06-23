@@ -1,8 +1,13 @@
 spring:
   profiles:
-    active: dev
+    active: prod
   application:
     name: discodeit
+  boot:
+    admin:
+      client:
+        instance:
+          name: discodeit
   servlet:
     multipart:
       maxFileSize: 10MB
@@ -16,6 +21,40 @@ discodeit:
     type: local
     local:
       root-path: ./upload
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+    info:
+      enabled: true
+    loggers:
+      access: unrestricted
+  info:
+    env:
+      enabled: true
+info:
+  app:
+    name: Discodeit
+    version: 1.7.0
+    spring-boot: 3.5.0
+    java-version: 17
+    datasource:
+      url: ${spring.datasource.url}
+      driver-class-name: ${spring.datasource.driver-class-name}
+    jpa:
+      ddl-auto: ${spring.jpa.hibernate.ddl-auto}
+    storage:
+      type: local
+      path: ./upload
+    multipart:
+      max-file-size: ${spring.servlet.multipart.max-file-size}
+      max-request-size: ${spring.servlet.multipart.max-request-size}
 
 logging:
   level:
