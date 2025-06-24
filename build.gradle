@@ -16,7 +16,7 @@ java {
 
 test {
 	finalizedBy jacocoTestReport
-	jvmArgs "-Duser.timezone=UTC"
+//	jvmArgs "-Duser.timezone=UTC"
 }
 
 jacocoTestReport {

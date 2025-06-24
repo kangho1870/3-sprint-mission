@@ -17,4 +17,5 @@ public record UserStatusCreateRequest(
                 example = "2024-03-20T09:12:28Z")
         @NotBlank(message = "시간 정보는 필수 입니다.")
         Instant lastActiveAt
-) {}
+) {
+}

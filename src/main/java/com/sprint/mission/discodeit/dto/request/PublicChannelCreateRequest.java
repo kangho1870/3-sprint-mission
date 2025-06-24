@@ -8,9 +8,10 @@ import jakarta.validation.constraints.Size;
 public record PublicChannelCreateRequest(
         @Schema(description = "채널 이름", example = "일반-채팅", minLength = 1, maxLength = 100)
         @NotBlank(message = "채널 이름은 필수 입니다.")
-        @Size(min =  1, max = 100)
+        @Size(min = 1, max = 100)
         String name,
 
         @Schema(description = "채널 설명", example = "일반적인 대화를 나누는 채널입니다", nullable = true)
         String description
-) {}
+) {
+}

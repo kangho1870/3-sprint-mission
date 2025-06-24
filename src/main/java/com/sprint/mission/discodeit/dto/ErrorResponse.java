@@ -10,10 +10,10 @@ import java.util.Map;
 @Getter
 @AllArgsConstructor
 public class ErrorResponse {
-    private Instant timestamp;
     String code;
     String message;
     Map<String, Object> details;
     String exceptionType;
     int status;
+    private Instant timestamp;
 }

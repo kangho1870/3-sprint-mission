@@ -19,44 +19,44 @@ import java.util.UUID;
 @Service
 public class BasicBinaryContentService implements BinaryContentService {
 
-  private final BinaryContentRepository binaryContentRepository;
-  private final BinaryContentStorage binaryContentStorage;
-  private final BinaryContentMapper binaryContentMapper;
+    private final BinaryContentRepository binaryContentRepository;
+    private final BinaryContentStorage binaryContentStorage;
+    private final BinaryContentMapper binaryContentMapper;
 
-  @Transactional
-  @Override
-  public BinaryContentDto create(BinaryContentCreateRequest request) {
-    String fileName = request.fileName();
-    byte[] bytes = request.bytes();
-    String contentType = request.contentType();
-    BinaryContent binaryContent = new BinaryContent(
-        fileName,
-        (long) bytes.length,
-        contentType
-    );
-    binaryContentStorage.put(binaryContent.getId(), bytes);
-    return binaryContentMapper.toDto(binaryContentRepository.save(binaryContent));
-  }
-
-  @Transactional(readOnly = true)
-  @Override
-  public BinaryContentDto find(UUID binaryContentId) {
-    return binaryContentMapper.toDto(binaryContentRepository.findById(binaryContentId)
-            .orElseThrow(() -> new BinaryContentNotFoundException(binaryContentId)));
-  }
-
-  @Transactional(readOnly = true)
-  @Override
-  public List<BinaryContentDto> findAllByIdIn(List<UUID> binaryContentIds) {
-    return binaryContentRepository.findAllByIdIn(binaryContentIds).stream().map(binaryContentMapper::toDto).toList();
-  }
-
-  @Transactional
-  @Override
-  public void delete(UUID binaryContentId) {
-    if (!binaryContentRepository.existsById(binaryContentId)) {
-      throw new BinaryContentNotFoundException(binaryContentId);
+    @Transactional
+    @Override
+    public BinaryContentDto create(BinaryContentCreateRequest request) {
+        String fileName = request.fileName();
+        byte[] bytes = request.bytes();
+        String contentType = request.contentType();
+        BinaryContent binaryContent = new BinaryContent(
+                fileName,
+                (long) bytes.length,
+                contentType
+        );
+        binaryContentStorage.put(binaryContent.getId(), bytes);
+        return binaryContentMapper.toDto(binaryContentRepository.save(binaryContent));
     }
-    binaryContentRepository.deleteById(binaryContentId);
-  }
+
+    @Transactional(readOnly = true)
+    @Override
+    public BinaryContentDto find(UUID binaryContentId) {
+        return binaryContentMapper.toDto(binaryContentRepository.findById(binaryContentId)
+                .orElseThrow(() -> new BinaryContentNotFoundException(binaryContentId)));
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<BinaryContentDto> findAllByIdIn(List<UUID> binaryContentIds) {
+        return binaryContentRepository.findAllByIdIn(binaryContentIds).stream().map(binaryContentMapper::toDto).toList();
+    }
+
+    @Transactional
+    @Override
+    public void delete(UUID binaryContentId) {
+        if (!binaryContentRepository.existsById(binaryContentId)) {
+            throw new BinaryContentNotFoundException(binaryContentId);
+        }
+        binaryContentRepository.deleteById(binaryContentId);
+    }
 }

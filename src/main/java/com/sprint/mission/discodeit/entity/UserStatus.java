@@ -6,10 +6,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.io.Serializable;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.UUID;
 
 @Schema(
         name = "UserStatus",
@@ -23,35 +21,35 @@ import java.util.UUID;
 @ToString(exclude = {"user"})
 public class UserStatus extends BaseUpdatableEntity {
 
-  @OneToOne
-  @JoinColumn(name = "user_id")
-  private User user;
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
-  @Schema(
-          description = "사용자의 마지막 활동 시간",
-          type = "string",
-          format = "date-time",
-          example = "2024-03-20T09:12:28Z"
-  )
-  @JsonFormat(shape = JsonFormat.Shape.STRING)
-  @Column(columnDefinition = "timestamp with time zone", nullable = false)
-  private Instant lastActiveAt;
+    @Schema(
+            description = "사용자의 마지막 활동 시간",
+            type = "string",
+            format = "date-time",
+            example = "2024-03-20T09:12:28Z"
+    )
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    @Column(columnDefinition = "timestamp with time zone", nullable = false)
+    private Instant lastActiveAt;
 
 
-  public UserStatus(User user, Instant lastActiveAt) {
-    this.user = user;
-    this.lastActiveAt = lastActiveAt;
-  }
-
-  public void update(Instant lastActiveAt) {
-    if (lastActiveAt != null && !lastActiveAt.equals(this.lastActiveAt)) {
-      this.lastActiveAt = lastActiveAt;
+    public UserStatus(User user, Instant lastActiveAt) {
+        this.user = user;
+        this.lastActiveAt = lastActiveAt;
     }
-  }
 
-  public Boolean isOnline() {
-    Instant instantFiveMinutesAgo = Instant.now().minus(Duration.ofMinutes(5));
+    public void update(Instant lastActiveAt) {
+        if (lastActiveAt != null && !lastActiveAt.equals(this.lastActiveAt)) {
+            this.lastActiveAt = lastActiveAt;
+        }
+    }
 
-    return lastActiveAt.isAfter(instantFiveMinutesAgo);
-  }
+    public Boolean isOnline() {
+        Instant instantFiveMinutesAgo = Instant.now().minus(Duration.ofMinutes(5));
+
+        return lastActiveAt.isAfter(instantFiveMinutesAgo);
+    }
 }

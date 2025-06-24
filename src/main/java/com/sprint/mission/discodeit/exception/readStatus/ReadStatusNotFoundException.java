@@ -1,9 +1,6 @@
 package com.sprint.mission.discodeit.exception.readStatus;
 
 import com.sprint.mission.discodeit.dto.ErrorCode;
-import com.sprint.mission.discodeit.dto.ResponseMessage;
-import com.sprint.mission.discodeit.exception.DiscodeitException;
-import org.springframework.http.HttpStatus;
 
 import java.time.Instant;
 import java.util.Map;

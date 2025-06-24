@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.exception;
 
 import com.sprint.mission.discodeit.dto.ErrorCode;
 import com.sprint.mission.discodeit.dto.ResponseMessage;
-import org.springframework.http.HttpStatus;
 
 import java.time.Instant;
 import java.util.Map;

@@ -12,4 +12,5 @@ public record LoginRequest(
         @Schema(description = "비밀번호", example = "password123")
         @NotBlank(message = "비밀번호는 필수 입니다.")
         String password
-) {}
+) {
+}

@@ -15,42 +15,42 @@ import java.util.Map;
 @ResponseBody
 public class GlobalExceptionHandler {
 
-  @ExceptionHandler(DiscodeitException.class)
-  public ResponseEntity<ErrorResponse> handleBaseException(DiscodeitException ex) {
+    @ExceptionHandler(DiscodeitException.class)
+    public ResponseEntity<ErrorResponse> handleBaseException(DiscodeitException ex) {
 
-    return ResponseEntity.status(ex.getErrorCode().getStatus())
-            .body(new ErrorResponse(
-                    ex.getTimestamp(),
-                    ex.getErrorCode().toString(),
-                    ex.getErrorCode().getMessage(),
-                    ex.getDetails(),
-                    ex.getClass().getSimpleName(),
-                    ex.getErrorCode().getStatus().value()
-            ));
-  }
+        return ResponseEntity.status(ex.getErrorCode().getStatus())
+                .body(new ErrorResponse(
+                        ex.getTimestamp(),
+                        ex.getErrorCode().toString(),
+                        ex.getErrorCode().getMessage(),
+                        ex.getDetails(),
+                        ex.getClass().getSimpleName(),
+                        ex.getErrorCode().getStatus().value()
+                ));
+    }
 
-  @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
-    String message = ex.getBindingResult().getFieldErrors().stream()
-            .map(e -> e.getField() + ": " + e.getDefaultMessage())
-            .findFirst()
-            .orElse("잘못된 요청입니다.");
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+        String message = ex.getBindingResult().getFieldErrors().stream()
+                .map(e -> e.getField() + ": " + e.getDefaultMessage())
+                .findFirst()
+                .orElse("잘못된 요청입니다.");
 
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .body(new ErrorResponse(
-                    Instant.now(),
-                    "BAD_REQUEST",
-                    "잘못된 요청입니다.",
-                    Map.of("message", message),
-                    ex.getClass().getSimpleName(),
-                    400
-            ));
-  }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(
+                        Instant.now(),
+                        "BAD_REQUEST",
+                        "잘못된 요청입니다.",
+                        Map.of("message", message),
+                        ex.getClass().getSimpleName(),
+                        400
+                ));
+    }
 
-  @ExceptionHandler(Exception.class)
-  public ResponseEntity<String> handleException(Exception e) {
-    return ResponseEntity
-        .status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .body(e.getMessage());
-  }
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleException(Exception e) {
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(e.getMessage());
+    }
 }

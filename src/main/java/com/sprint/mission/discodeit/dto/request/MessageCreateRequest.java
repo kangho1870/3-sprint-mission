@@ -3,9 +3,9 @@ package com.sprint.mission.discodeit.dto.request;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 
 import java.util.UUID;
+
 @Schema(description = "메시지 생성 요청 DTO")
 public record MessageCreateRequest(
         @Schema(description = "메시지 내용", example = "안녕하세요!")
@@ -21,4 +21,5 @@ public record MessageCreateRequest(
                 example = "123e4567-e89b-12d3-a456-426614174000")
         @NotNull(message = "작성자 ID는 null일 수 없습니다.")
         UUID authorId
-) {}
+) {
+}

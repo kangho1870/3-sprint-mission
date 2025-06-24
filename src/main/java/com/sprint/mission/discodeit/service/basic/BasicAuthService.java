@@ -16,22 +16,22 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class BasicAuthService implements AuthService {
 
-  private final UserRepository userRepository;
-  private final UserMapper userMapper;
+    private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
-  @Transactional(readOnly = true)
-  @Override
-  public UserDto login(LoginRequest loginRequest) {
-    String username = loginRequest.username();
-    String password = loginRequest.password();
+    @Transactional(readOnly = true)
+    @Override
+    public UserDto login(LoginRequest loginRequest) {
+        String username = loginRequest.username();
+        String password = loginRequest.password();
 
-    User user = userRepository.findByUsername(username)
-        .orElseThrow(() -> new UserNotFoundException(username));
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException(username));
 
-    if (!user.getPassword().equals(password)) {
-      throw new IdOrPasswordValidException();
+        if (!user.getPassword().equals(password)) {
+            throw new IdOrPasswordValidException();
+        }
+
+        return userMapper.toDto(user);
     }
-
-    return userMapper.toDto(user);
-  }
 }

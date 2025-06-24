@@ -1,10 +1,10 @@
 package com.sprint.mission.discodeit.aop;
 
-import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.*;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -13,28 +13,6 @@ import java.util.Arrays;
 @Component
 @Slf4j
 public class LoggingAspect {
-
-//    @Pointcut("execution(* com.sprint.mission.discodeit.controller..*(..))")
-//    public void controllerMethods() {}
-
-//    @Pointcut("execution(* com.sprint.mission.discodeit.service.basic.BasicUserService.create*(..)) || " +
-//            "execution(* com.sprint.mission.discodeit.service.basic.BasicUserService.update*(..)) || " +
-//            "execution(* com.sprint.mission.discodeit.service.basic.BasicUserService.delete*(..))")
-//    public void basicUserServicePointcut() {}
-//
-//    @Pointcut("execution(* com.sprint.mission.discodeit.service.basic.BasicChannelService.create*(..)) || " +
-//            "execution(* com.sprint.mission.discodeit.service.basic.BasicChannelService.update*(..)) || " +
-//            "execution(* com.sprint.mission.discodeit.service.basic.BasicChannelService.delete*(..))")
-//    public void basicChannelServicePointcut() {}
-//
-//    @Pointcut("execution(* com.sprint.mission.discodeit.service.basic.BasicMessageService.create*(..)) || " +
-//            "execution(* com.sprint.mission.discodeit.service.basic.BasicMessageService.update*(..)) || " +
-//            "execution(* com.sprint.mission.discodeit.service.basic.BasicMessageService.delete*(..))")
-//    public void basicMessageServicePointcut() {}
-//
-//    @Pointcut("execution(* com.sprint.mission.discodeit.storage.LocalBinaryContentStorage.put*(..)) || " +
-//            "execution(* com.sprint.mission.discodeit.storage.LocalBinaryContentStorage.download*(..))")
-//    public void binaryContentStoragePointcut() {}
 
     @Pointcut("execution(* com.sprint.mission.discodeit.service.basic.BasicUserService.create*(..)) || " +
             "execution(* com.sprint.mission.discodeit.service.basic.BasicUserService.update*(..)) || " +
@@ -47,10 +25,8 @@ public class LoggingAspect {
             "execution(* com.sprint.mission.discodeit.service.basic.BasicMessageService.delete*(..)) || " +
             "execution(* com.sprint.mission.discodeit.storage.LocalBinaryContentStorage.put*(..)) || " +
             "execution(* com.sprint.mission.discodeit.storage.LocalBinaryContentStorage.download*(..))")
-    public void businessServicePointcut() {}
-
-//    @Pointcut("execution(* com.sprint.mission.discodeit.service..*(..))")
-//    public void serviceMethods() {}
+    public void businessServicePointcut() {
+    }
 
     @Around("businessServicePointcut()")
     public Object logBusinessEvent(ProceedingJoinPoint joinPoint) throws Throwable {

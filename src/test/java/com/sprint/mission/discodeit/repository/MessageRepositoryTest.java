@@ -74,7 +74,10 @@ public class MessageRepositoryTest {
         em.clear();
     }
 
-
+    @BeforeAll
+    static void beforeAll() {
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+    }
 
     @Test
     void save() {

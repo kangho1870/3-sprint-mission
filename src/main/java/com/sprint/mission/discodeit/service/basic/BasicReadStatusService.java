@@ -27,61 +27,61 @@ import java.util.UUID;
 @Service
 public class BasicReadStatusService implements ReadStatusService {
 
-  private final ReadStatusRepository readStatusRepository;
-  private final UserRepository userRepository;
-  private final ChannelRepository channelRepository;
-  private final ReadStatusMapper readStatusMapper;
+    private final ReadStatusRepository readStatusRepository;
+    private final UserRepository userRepository;
+    private final ChannelRepository channelRepository;
+    private final ReadStatusMapper readStatusMapper;
 
-  @Transactional
-  @Override
-  public ReadStatusDto create(ReadStatusCreateRequest request) {
-    User user = userRepository.findById(request.userId()).orElseThrow(() -> new UserNotFoundException(request.userId()));
+    @Transactional
+    @Override
+    public ReadStatusDto create(ReadStatusCreateRequest request) {
+        User user = userRepository.findById(request.userId()).orElseThrow(() -> new UserNotFoundException(request.userId()));
 
-    Channel channel = channelRepository.findById(request.channelId()).orElseThrow(() -> new ChannelNotFoundException(request.channelId()));
+        Channel channel = channelRepository.findById(request.channelId()).orElseThrow(() -> new ChannelNotFoundException(request.channelId()));
 
 
-    if (readStatusRepository.findAllByUserId(user.getId()).stream()
-        .anyMatch(readStatus -> readStatus.getChannel().getId().equals(channel.getId()))) {
-      throw new DuplicateReadStatusException(user.getId(), channel.getId());
+        if (readStatusRepository.findAllByUserId(user.getId()).stream()
+                .anyMatch(readStatus -> readStatus.getChannel().getId().equals(channel.getId()))) {
+            throw new DuplicateReadStatusException(user.getId(), channel.getId());
+        }
+
+        ReadStatus readStatus = new ReadStatus(user, channel, request.lastReadAt());
+        return readStatusMapper.toDto(readStatusRepository.save(readStatus));
     }
 
-    ReadStatus readStatus = new ReadStatus(user, channel, request.lastReadAt());
-    return readStatusMapper.toDto(readStatusRepository.save(readStatus));
-  }
-
-  @Transactional(readOnly = true)
-  @Override
-  public ReadStatusDto find(UUID readStatusId) {
-    return readStatusMapper.toDto(readStatusRepository.findById(readStatusId).orElseThrow(() -> new ReadStatusNotFoundException(readStatusId))
-    );
-  }
-
-  @Transactional(readOnly = true)
-  @Override
-  public List<ReadStatusDto> findAllByUserId(UUID userId) {
-    return readStatusRepository.findAllByUserId(userId).stream().map(readStatusMapper::toDto).toList();
-  }
-
-  @Transactional
-  @Override
-  public ReadStatusDto update(UUID readStatusId, ReadStatusUpdateRequest request) {
-    Instant newLastReadAt = request.newLastReadAt();
-
-    ReadStatus readStatus = readStatusRepository.findById(readStatusId).orElseThrow(() -> new ReadStatusNotFoundException(readStatusId));
-
-    readStatus.update(newLastReadAt);
-
-    return readStatusMapper.toDto(readStatus);
-  }
-
-  @Transactional
-  @Override
-  public void delete(UUID readStatusId) {
-
-    if (!readStatusRepository.existsById(readStatusId)) {
-      throw new ReadStatusNotFoundException(readStatusId);
+    @Transactional(readOnly = true)
+    @Override
+    public ReadStatusDto find(UUID readStatusId) {
+        return readStatusMapper.toDto(readStatusRepository.findById(readStatusId).orElseThrow(() -> new ReadStatusNotFoundException(readStatusId))
+        );
     }
 
-    readStatusRepository.deleteById(readStatusId);
-  }
+    @Transactional(readOnly = true)
+    @Override
+    public List<ReadStatusDto> findAllByUserId(UUID userId) {
+        return readStatusRepository.findAllByUserId(userId).stream().map(readStatusMapper::toDto).toList();
+    }
+
+    @Transactional
+    @Override
+    public ReadStatusDto update(UUID readStatusId, ReadStatusUpdateRequest request) {
+        Instant newLastReadAt = request.newLastReadAt();
+
+        ReadStatus readStatus = readStatusRepository.findById(readStatusId).orElseThrow(() -> new ReadStatusNotFoundException(readStatusId));
+
+        readStatus.update(newLastReadAt);
+
+        return readStatusMapper.toDto(readStatus);
+    }
+
+    @Transactional
+    @Override
+    public void delete(UUID readStatusId) {
+
+        if (!readStatusRepository.existsById(readStatusId)) {
+            throw new ReadStatusNotFoundException(readStatusId);
+        }
+
+        readStatusRepository.deleteById(readStatusId);
+    }
 }
