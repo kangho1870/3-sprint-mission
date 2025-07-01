@@ -6,12 +6,16 @@ plugins {
 }
 
 group = 'com.sprint.mission'
-version = '1.2.-M8'
+version = '1.2-M8'
 
 java {
 	toolchain {
 		languageVersion = JavaLanguageVersion.of(17)
 	}
+}
+
+bootJar {
+	archiveFileName = "${rootProject.name}-${version}.jar"
 }
 
 test {

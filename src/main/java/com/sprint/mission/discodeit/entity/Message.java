@@ -17,7 +17,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-@Table(name = "tbl_message")
+@Table(name = "tbl_message", schema = "discodeit")
 public class Message extends BaseUpdatableEntity {
 
     @Schema(

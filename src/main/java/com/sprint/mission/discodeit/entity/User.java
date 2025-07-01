@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
         description = "사용자 정보를 담고 있는 엔티티"
 )
 @Entity
-@Table(name = "tbl_user")
+@Table(name = "tbl_user", schema = "discodeit")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class User extends BaseUpdatableEntity {

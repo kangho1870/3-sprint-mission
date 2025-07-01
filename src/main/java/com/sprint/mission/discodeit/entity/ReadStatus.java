@@ -20,7 +20,7 @@ import java.time.Instant;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-@Table(name = "tbl_read_status")
+@Table(name = "tbl_read_status", schema = "discodeit")
 public class ReadStatus extends BaseUpdatableEntity {
 
     @ManyToOne

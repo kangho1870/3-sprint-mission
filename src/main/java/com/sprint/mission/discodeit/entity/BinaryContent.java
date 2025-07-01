@@ -15,7 +15,7 @@ import lombok.Setter;
         description = "이진 컨텐츠 정보를 담고 있는 엔티티"
 )
 @Entity
-@Table(name = "tbl_binary_content")
+@Table(name = "tbl_binary_content", schema = "discodeit")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Setter

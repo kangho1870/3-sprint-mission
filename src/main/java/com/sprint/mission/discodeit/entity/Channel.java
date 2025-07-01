@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Profile;
 )
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "tbl_channel")
+@Table(name = "tbl_channel", schema = "discodeit")
 @Entity
 public class Channel extends BaseUpdatableEntity {
 

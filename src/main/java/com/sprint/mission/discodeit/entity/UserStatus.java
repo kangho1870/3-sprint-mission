@@ -14,7 +14,7 @@ import java.time.Instant;
         description = "사용자의 온라인 상태 정보를 담고 있는 엔티티 (마지막 활동 시점으로부터 5분 이내면 온라인으로 간주)"
 )
 @Entity
-@Table(name = "tbl_user_status")
+@Table(name = "tbl_user_status", schema = "discodeit")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Setter
