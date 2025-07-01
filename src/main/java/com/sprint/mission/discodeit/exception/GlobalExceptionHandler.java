@@ -20,12 +20,12 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(ex.getErrorCode().getStatus())
                 .body(new ErrorResponse(
-                        ex.getTimestamp(),
                         ex.getErrorCode().toString(),
                         ex.getErrorCode().getMessage(),
                         ex.getDetails(),
                         ex.getClass().getSimpleName(),
-                        ex.getErrorCode().getStatus().value()
+                        ex.getErrorCode().getStatus().value(),
+                        ex.getTimestamp()
                 ));
     }
 
@@ -38,13 +38,13 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(
-                        Instant.now(),
                         "BAD_REQUEST",
                         "잘못된 요청입니다.",
                         Map.of("message", message),
                         ex.getClass().getSimpleName(),
-                        400
-                ));
+                        400,
+                        Instant.now()
+                        ));
     }
 
     @ExceptionHandler(Exception.class)
