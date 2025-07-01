@@ -1,5 +1,5 @@
 server:
-  port: 80
+  port: 8080
 
 spring:
   datasource:
@@ -11,11 +11,7 @@ spring:
       connection-init-sql: SET SESSION hibernate.jdbc.lob.non_contextual_creation=true
   jpa:
     hibernate:
-      ddl-auto: create
-  boot:
-    admin:
-      client:
-        url: http://localhost:9090
+      ddl-auto: update
 logging:
   level:
     root: info
