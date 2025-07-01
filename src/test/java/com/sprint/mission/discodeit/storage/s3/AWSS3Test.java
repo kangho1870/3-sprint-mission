@@ -25,7 +25,6 @@ import java.util.Properties;
 
 public class AWSS3Test {
 
-    static Properties env;
     static S3Client s3;
     static S3Presigner presigner;
     static String bucket;
