@@ -39,6 +39,7 @@ public class Message extends BaseUpdatableEntity {
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinTable(
             name = "tbl_message_attachment",
+            schema = "discodeit",
             joinColumns = @JoinColumn(name = "message_id"),
             inverseJoinColumns = @JoinColumn(name = "attachment_id")
     )

@@ -20,7 +20,7 @@ bin/
 upload/
 
 ### IntelliJ IDEA ###
-.env
+*.env
 .idea
 *.iws
 *.iml
@@ -30,6 +30,7 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 *.yml
+.discodeit/
 
 ### NetBeans ###
 /nbproject/private/
