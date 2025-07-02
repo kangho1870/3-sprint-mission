@@ -43,7 +43,11 @@
         },
         {
           "name": "RDS_USERNAME",
-          "value": "postgres"
+          "value": "discodeit_user"
+        },
+        {
+          "name": "RDS_PASSWORD",
+          "value": "discodeit1234"
         }
       ],
       "environmentFiles": [],
