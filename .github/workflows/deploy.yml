@@ -5,16 +5,11 @@ on:
     branches: [ release ]
   workflow_dispatch:
 env:
-  # AWS 리전 (서울)
-  AWS_REGION: ap-northeast-2
-  # ECR 저장소 이름
-  ECR_REPOSITORY: discodeit
-  # ECS 서비스 이름
-  ECS_SERVICE: discodeit-service
-  # ECS 클러스터 이름
-  ECS_CLUSTER: discodeit-cluster
-  # ECS 태스크 정의 이름
-  ECS_TASK_DEFINITION: discodeit-task
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY_URI }}
+  ECS_SERVICE: ${{ vars.ECS_SERVICE }}
+  ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
+  ECS_TASK_DEFINITION: ${{ vars.ECS_TASK_DEFINITION }}
 jobs:
   # 배포 작업 정의
   deploy:
