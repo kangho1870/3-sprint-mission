@@ -1,38 +1,54 @@
 package com.sprint.mission.discodeit.storage.s3;
 
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.storage.S3BinaryContentStorage;
+import io.github.cdimascio.dotenv.Dotenv;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.util.StreamUtils;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class S3BinaryContentStorageTest {
 
+
     private static S3BinaryContentStorage storage;
+    @Mock
+    private BinaryContentRepository binaryContentRepository;
 
-    @BeforeAll
-    public static void setup() {
-        String accessKey = System.getenv("AWS_S3_ACCESS_KEY");
-        String secretKey = System.getenv("AWS_S3_SECRET_KEY");
-        String region = System.getenv("AWS_S3_REGION");
-        String bucket = System.getenv("AWS_S3_BUCKET");
-        int presignedUrlExpiration = 600; // 초 단위
+    @BeforeEach
+    public void setup() {
+        Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
 
-        BinaryContentRepository mockRepository = mock(BinaryContentRepository.class);
+        String accessKey = dotenv.get("AWS_S3_ACCESS_KEY");
+        String secretKey = dotenv.get("AWS_S3_SECRET_KEY");
+        String region = dotenv.get("AWS_S3_REGION");
+        String bucket = dotenv.get("AWS_S3_BUCKET");
+        int presignedUrlExpiration = 600;
 
-        storage = new S3BinaryContentStorage(accessKey, secretKey, region, bucket, presignedUrlExpiration, mockRepository);
+        storage = new S3BinaryContentStorage(
+                accessKey, secretKey, region, bucket, presignedUrlExpiration, binaryContentRepository
+        );
     }
 
     @Test
@@ -49,6 +65,7 @@ public class S3BinaryContentStorageTest {
             );
 
             UUID id = UUID.randomUUID();
+            when(binaryContentRepository.findById(id)).thenReturn(Optional.of(new BinaryContent("file", 10L, "jpeg")));
 
             // when
             UUID result = storage.put(id, mockFile.getBytes());
@@ -80,14 +97,11 @@ public class S3BinaryContentStorageTest {
         ResponseEntity<?> response = storage.download(dto);
 
         // then
-        assertEquals(200, response.getStatusCodeValue());
-        assertTrue(response.getBody() instanceof InputStreamResource);
+        assertEquals(302, response.getStatusCodeValue());
+        assertNotNull(response.getHeaders().getLocation());
+        assertTrue(response.getHeaders().getLocation().toString().contains("s3"),
+                "Presigned URL이 S3 주소를 포함하지 않습니다.");
 
-        InputStreamResource resource = (InputStreamResource) response.getBody();
 
-        byte[] bytes = resource.getInputStream().readAllBytes();
-
-        assertNotNull(bytes);
-        assertTrue(bytes.length > 0);
     }
 }
