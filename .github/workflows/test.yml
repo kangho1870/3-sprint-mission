@@ -28,7 +28,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Run tests and generate coverage
-        run: ./gradlew test jacocoTestReport
+        run: ./gradlew test jacocoTestReport -Duser.timezone=UTC
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
