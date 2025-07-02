@@ -40,10 +40,10 @@ public class S3BinaryContentStorageTest {
     public void setup() {
         Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
 
-        String accessKey = dotenv.get("AWS_S3_ACCESS_KEY");
-        String secretKey = dotenv.get("AWS_S3_SECRET_KEY");
-        String region = dotenv.get("AWS_S3_REGION");
-        String bucket = dotenv.get("AWS_S3_BUCKET");
+        String accessKey = dotenv.get("AWS_ACCESS_KEY");
+        String secretKey = dotenv.get("AWS_SECRET_KEY");
+        String region = dotenv.get("AWS_REGION");
+        String bucket = dotenv.get("AWS_BUCKET");
         int presignedUrlExpiration = 600;
 
         storage = new S3BinaryContentStorage(
