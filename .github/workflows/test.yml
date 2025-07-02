@@ -5,11 +5,10 @@ on:
     branches: [ main ]
 
 env:
+  AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+  AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+  AWS_BUCKET: discodeit-binary-content-storage-kh
   AWS_REGION: ap-northeast-2
-  ECR_REPOSITORY: discodeit
-  ECS_SERVICE: discodeit-service
-  ECS_CLUSTER: discodeit-cluster
-  ECS_TASK_DEFINITION: discodeit-task
 
 jobs:
   test-and-upload-coverage:
