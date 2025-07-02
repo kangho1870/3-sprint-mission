@@ -14,9 +14,9 @@ spring:
       mode: always
       platform: h2
       schema-locations: classpath:schema.sql
-  jpa: 
+  jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: create-drop
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
     properties:
@@ -31,8 +31,8 @@ logging:
     root: info
 aws:
   s3:
-    access-key: ${AWS_ACCESS_KEY}
-    secret-key: ${AWS_SECRET_KEY}
-    region: ${AWS_REGION}
-    bucket: ${AWS_S3_BUCKET}
+    AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+    AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+    AWS_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+    AWS_REGION: ${AWS_REGION}
     presigned-url-expiration: 600
