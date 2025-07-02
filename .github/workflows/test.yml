@@ -1,0 +1,36 @@
+name: test.yml
+
+on:
+  pull_request:
+    branches: [ main ]
+
+env:
+  AWS_REGION: ap-northeast-2
+  ECR_REPOSITORY: discodeit
+  ECS_SERVICE: discodeit-service
+  ECS_CLUSTER: discodeit-cluster
+  ECS_TASK_DEFINITION: discodeit-task
+
+jobs:
+  test-and-upload-coverage:
+    name: Run tests and upload Codecov
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Grant execute permission for Gradlew
+        run: chmod +x ./gradlew
+
+      - name: Run tests and generate coverage
+        run: ./gradlew test jacocoTestReport
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
