@@ -13,7 +13,7 @@ RUN chmod +x ./gradlew && ./gradlew bootJar && \
     cp build/libs/${PROJECT_NAME}-${PROJECT_VERSION}.jar app.jar
 
 # 2단계: 실행 스테이지
-FROM amazoncorretto:17
+FROM eclipse-temurin:17-jre-alpine AS runtime
 
 WORKDIR /app
 
