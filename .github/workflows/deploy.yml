@@ -64,6 +64,14 @@ jobs:
             AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }}
             AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }}
 
+      - name: Stop existing ECS service (desired-count 0)
+        run: |
+          aws ecs update-service \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --service ${{ env.ECS_SERVICE }} \
+            --desired-count 0 \
+            --region ${{ env.AWS_REGION }}
+
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
@@ -71,3 +79,11 @@ jobs:
           service: ${{ env.ECS_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
+
+      - name: Restart ECS service (desired-count 1)
+        run: |
+          aws ecs update-service \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --service ${{ env.ECS_SERVICE }} \
+            --desired-count 1 \
+            --region ${{ env.AWS_REGION }}
