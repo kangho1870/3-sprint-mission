@@ -29,10 +29,3 @@ logging:
     org.hibernate.SQL: info
     org.hibernate.type.descriptor.sql.BasicBinder: trace
     root: info
-aws:
-  s3:
-    access-key: ${AWS_ACCESS_KEY}
-    secret-key: ${AWS_SECRET_KEY}
-    bucket: ${AWS_BUCKET}
-    region: ${AWS_REGION}
-    presigned-url-expiration: 600

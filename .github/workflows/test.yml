@@ -26,6 +26,13 @@ jobs:
       - name: Grant execute permission for Gradlew
         run: chmod +x ./gradlew
 
+      - name: Set AWS ENV for test
+        run: |
+          echo "AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }}" >> $GITHUB_ENV
+          echo "AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }}" >> $GITHUB_ENV
+          echo "AWS_REGION=ap-northeast-2" >> $GITHUB_ENV
+          echo "AWS_BUCKET=discodeit-binary-content-storage-kh" >> $GITHUB_ENV
+
       - name: Run tests and generate coverage
         run: ./gradlew test jacocoTestReport -Duser.timezone=UTC
 
