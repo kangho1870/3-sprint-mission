@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.util.StreamUtils;
 
@@ -28,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@ActiveProfiles("test")
 @ExtendWith(MockitoExtension.class)
 public class S3BinaryContentStorageTest {
 
@@ -38,12 +40,20 @@ public class S3BinaryContentStorageTest {
 
     @BeforeEach
     public void setup() {
+
         Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
 
-        String accessKey = dotenv.get("AWS_S3_ACCESS_KEY");
-        String secretKey = dotenv.get("AWS_S3_SECRET_KEY");
-        String region = dotenv.get("AWS_S3_REGION");
-        String bucket = dotenv.get("AWS_S3_BUCKET");
+        String accessKey = Optional.ofNullable(System.getenv("AWS_ACCESS_KEY"))
+                .orElse(dotenv.get("AWS_S3_ACCESS_KEY"));
+
+        String secretKey = Optional.ofNullable(System.getenv("AWS_SECRET_KEY"))
+                .orElse(dotenv.get("AWS_S3_SECRET_KEY"));
+
+        String region = Optional.ofNullable(System.getenv("AWS_REGION"))
+                .orElse(dotenv.get("AWS_S3_REGION"));
+
+        String bucket = Optional.ofNullable(System.getenv("AWS_BUCKET"))
+                .orElse(dotenv.get("AWS_S3_BUCKET"));
         int presignedUrlExpiration = 600;
 
         storage = new S3BinaryContentStorage(

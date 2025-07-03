@@ -1,15 +1,16 @@
 name: test.yml
 
 on:
+  push:
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
 env:
+  AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+  AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+  AWS_BUCKET: discodeit-binary-content-storage-kh
   AWS_REGION: ap-northeast-2
-  ECR_REPOSITORY: discodeit
-  ECS_SERVICE: discodeit-service
-  ECS_CLUSTER: discodeit-cluster
-  ECS_TASK_DEFINITION: discodeit-task
 
 jobs:
   test-and-upload-coverage:
@@ -27,8 +28,15 @@ jobs:
       - name: Grant execute permission for Gradlew
         run: chmod +x ./gradlew
 
+      - name: Set AWS ENV for test
+        run: |
+          echo "AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }}" >> $GITHUB_ENV
+          echo "AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }}" >> $GITHUB_ENV
+          echo "AWS_REGION=ap-northeast-2" >> $GITHUB_ENV
+          echo "AWS_BUCKET=discodeit-binary-content-storage-kh" >> $GITHUB_ENV
+
       - name: Run tests and generate coverage
-        run: ./gradlew test jacocoTestReport
+        run: ./gradlew test jacocoTestReport -Duser.timezone=UTC
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5

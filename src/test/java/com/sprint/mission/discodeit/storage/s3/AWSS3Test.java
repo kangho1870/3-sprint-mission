@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.storage.s3;
 
 import com.sprint.mission.discodeit.util.EnvLoader;
+import io.github.cdimascio.dotenv.Dotenv;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -21,6 +22,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.Optional;
 import java.util.Properties;
 
 public class AWSS3Test {
@@ -32,21 +34,29 @@ public class AWSS3Test {
     @BeforeAll
     public static void setup() {
         // Load .env
-        EnvLoader.loadToSystemProperties(".env");
-        String accessKey = System.getProperty("AWS_S3_ACCESS_KEY");
-        String secretKey = System.getProperty("AWS_S3_SECRET_KEY");
+        Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
+
+        String accessKey = Optional.ofNullable(System.getenv("AWS_ACCESS_KEY"))
+                .orElse(dotenv.get("AWS_S3_ACCESS_KEY"));
+
+        String secretKey = Optional.ofNullable(System.getenv("AWS_SECRET_KEY"))
+                .orElse(dotenv.get("AWS_S3_SECRET_KEY"));
+
+        String region = Optional.ofNullable(System.getenv("AWS_REGION"))
+                .orElse(dotenv.get("AWS_S3_REGION"));
+
+        bucket = Optional.ofNullable(System.getenv("AWS_BUCKET"))
+                .orElse(dotenv.get("AWS_S3_BUCKET"));
 
         AwsBasicCredentials creds = AwsBasicCredentials.create(accessKey, secretKey);
 
-        bucket = System.getProperty("AWS_S3_BUCKET");
-
         s3 = S3Client.builder()
-                .region(Region.of(System.getProperty("AWS_S3_REGION")))
+                .region(Region.of(region))
                 .credentialsProvider(StaticCredentialsProvider.create(creds))
                 .build();
 
         presigner = S3Presigner.builder()
-                .region(Region.of(System.getProperty("AWS_S3_REGION")))
+                .region(Region.of(region))
                 .credentialsProvider(StaticCredentialsProvider.create(creds))
                 .build();
     }
@@ -63,7 +73,6 @@ public class AWSS3Test {
 
         s3.putObject(request, file.toPath());
 
-        System.out.println("업로드 성공: " + key);
     }
 
     @Test
@@ -83,7 +92,6 @@ public class AWSS3Test {
         PresignedGetObjectRequest presignedRequest = presigner.presignGetObject(presignRequest);
 
         URL url = presignedRequest.url();
-        System.out.println("Presigned URL: " + url);
     }
 
     @Test
@@ -106,8 +114,6 @@ public class AWSS3Test {
             while ((bytesRead = response.read(buffer)) != -1) {
                 output.write(buffer, 0, bytesRead);
             }
-
-            System.out.println("다운로드 완료: downloaded_" + Paths.get(key).getFileName());
         }
     }
 }
