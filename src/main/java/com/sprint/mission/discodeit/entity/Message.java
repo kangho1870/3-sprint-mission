@@ -17,7 +17,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-@Table(name = "tbl_message", schema = "discodeit")
+@Table(name = "tbl_message")
 public class Message extends BaseUpdatableEntity {
 
     @Schema(
@@ -39,7 +39,6 @@ public class Message extends BaseUpdatableEntity {
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinTable(
             name = "tbl_message_attachment",
-            schema = "discodeit",
             joinColumns = @JoinColumn(name = "message_id"),
             inverseJoinColumns = @JoinColumn(name = "attachment_id")
     )
