@@ -14,18 +14,13 @@ import java.util.Arrays;
 @Slf4j
 public class LoggingAspect {
 
-    @Pointcut("execution(* com.sprint.mission.discodeit.service.basic.BasicUserService.create*(..)) || " +
-            "execution(* com.sprint.mission.discodeit.service.basic.BasicUserService.update*(..)) || " +
-            "execution(* com.sprint.mission.discodeit.service.basic.BasicUserService.delete*(..)) || " +
-            "execution(* com.sprint.mission.discodeit.service.basic.BasicChannelService.create*(..)) || " +
-            "execution(* com.sprint.mission.discodeit.service.basic.BasicChannelService.update*(..)) || " +
-            "execution(* com.sprint.mission.discodeit.service.basic.BasicChannelService.delete*(..)) || " +
-            "execution(* com.sprint.mission.discodeit.service.basic.BasicMessageService.create*(..)) || " +
-            "execution(* com.sprint.mission.discodeit.service.basic.BasicMessageService.update*(..)) || " +
-            "execution(* com.sprint.mission.discodeit.service.basic.BasicMessageService.delete*(..)) || " +
-            "execution(* com.sprint.mission.discodeit.storage.LocalBinaryContentStorage.put*(..)) || " +
-            "execution(* com.sprint.mission.discodeit.storage.LocalBinaryContentStorage.download*(..))")
+    @Pointcut("execution(* com.sprint.mission.discodeit.service..*Service.*(..))")
     public void businessServicePointcut() {
+    }
+
+    // 페이지네이션 메서드 전용 포인트컷
+    @Pointcut("execution(* com.sprint.mission.discodeit.service.basic.BasicMessageService.findAllByChannelId(..))")
+    public void paginationServicePointcut() {
     }
 
     @Around("businessServicePointcut()")
@@ -43,6 +38,28 @@ public class LoggingAspect {
         } catch (Throwable throwable) {
             log.error("[{}] 비즈니스 이벤트 실패 - 작업: {}, 예외: {}, 메시지: {}",
                     className, methodName, throwable.getClass().getSimpleName(), throwable.getMessage());
+            throw throwable;
+        }
+    }
+
+    @Around("paginationServicePointcut()")
+    public Object logPaginationEvent(ProceedingJoinPoint joinPoint) throws Throwable {
+        Object[] args = joinPoint.getArgs();
+        String channelId = args.length > 0 ? String.valueOf(args[0]) : "N/A";
+        String cursor = args.length > 1 ? String.valueOf(args[1]) : "N/A";
+        String pageSize = (args.length > 2 && args[2] instanceof org.springframework.data.domain.Pageable)
+                ? String.valueOf(((org.springframework.data.domain.Pageable) args[2]).getPageSize())
+                : "N/A";
+
+        log.info("[Pagination] 채널ID={}, 커서={}, 페이지사이즈={}", channelId, cursor, pageSize);
+
+        try {
+            Object result = joinPoint.proceed();
+            log.info("[Pagination] 메시지 조회 성공");
+            return result;
+        } catch (Throwable throwable) {
+            log.error("[Pagination] 메시지 조회 실패 - 예외: {}, 메시지: {}",
+                    throwable.getClass().getSimpleName(), throwable.getMessage());
             throw throwable;
         }
     }

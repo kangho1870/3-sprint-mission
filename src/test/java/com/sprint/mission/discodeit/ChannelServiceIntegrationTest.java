@@ -11,7 +11,11 @@ import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
@@ -22,7 +26,13 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+
+@ActiveProfiles("test")
 @SpringBootTest
+@AutoConfigureMockMvc
 @DisplayName("채널 서비스 통합 테스트")
 @Transactional
 public class ChannelServiceIntegrationTest {
@@ -35,20 +45,33 @@ public class ChannelServiceIntegrationTest {
     @Autowired private BinaryContentRepository binaryContentRepository;
     @Autowired private BinaryContentStorage binaryContentStorage;
     @Autowired private MessageRepository messageRepository;
+    @Autowired private MockMvc mockMvc;
 
     @Test
     @DisplayName("PUBLIC 채널 생성 요청 시 모든 계층에서 올바르게 동작해야 한다")
-    void createPublicChannelProcessIntegration() {
+    void createPublicChannelProcessIntegration() throws Exception {
         // given
-        PublicChannelCreateRequest publicChannelCreateRequest = new PublicChannelCreateRequest("test", "test");
+        String json = """
+            {
+                "name": "test-channel",
+                "description": "테스트 설명"
+            }
+            """;
 
-        // when
-        ChannelDto channelDto = channelService.create(publicChannelCreateRequest);
+        // when & then
+        mockMvc.perform(post("/api/channels/public")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.name").value("test-channel"))
+                .andExpect(jsonPath("$.type").value("PUBLIC"));
 
-        // then
-        Channel channel = channelRepository.findById(channelDto.id()).orElseThrow();
-        assertThat(channelDto.name()).isEqualTo(channel.getName());
-        assertThat(channelDto.id()).isEqualTo(channel.getId());
+        List<Channel> found = channelRepository.findAll();
+
+        Channel savedChannel = found.get(0);
+        assertThat(savedChannel.getName()).isEqualTo("test-channel");
+        assertThat(savedChannel.getDescription()).isEqualTo("테스트 설명");
+        assertThat(savedChannel.getType()).isEqualTo(ChannelType.PUBLIC);
     }
 
     /*
@@ -58,7 +81,7 @@ public class ChannelServiceIntegrationTest {
     * */
     @Test
     @DisplayName("PRIVATE 채널 생성 요청 시 모든 계층에서 올바르게 동작해야 한다")
-    void createPrivateChannelProcessIntegration() {
+    void createPrivateChannelProcessIntegration() throws Exception {
         // given
         BinaryContent binaryContent = new BinaryContent("test", 100L, "png");
         binaryContentRepository.save(binaryContent);
@@ -75,37 +98,51 @@ public class ChannelServiceIntegrationTest {
         userRepository.flush();
         userStatusRepository.flush();
 
-        List<UUID> userIds = Arrays.asList(user.getId());
+        String json = """
+        {
+            "participantIds": ["%s"]
+        }
+        """.formatted(user.getId());
 
-        PrivateChannelCreateRequest privateChannelCreateRequest = new PrivateChannelCreateRequest(userIds);
-        // when
-        ChannelDto channelDto = channelService.create(privateChannelCreateRequest);
+        // when & then
+        mockMvc.perform(post("/api/channels/private")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.type").value("PRIVATE"))
+                .andExpect(jsonPath("$.participants[0].id").value(user.getId().toString()));
 
-        // then
-        Channel channel = channelRepository.findById(channelDto.id()).orElseThrow();
-        assertThat(channelDto.type().name()).isEqualTo(channel.getType().name());
-        assertThat(channelDto.participants().get(0).id()).isEqualTo(userIds.get(0));
+        List<Channel> channels = channelRepository.findAll();
+        assertThat(channels).hasSize(1);
 
-        List<ReadStatus> foundReadStatuses = readStatusRepository.findAllByChannelId(channelDto.id());
-        assertThat(foundReadStatuses.size()).isEqualTo(1);
-        assertThat(foundReadStatuses.get(0).getUser().getId()).isEqualTo(user.getId());
+        List<ReadStatus> statuses = readStatusRepository.findAllByChannelId(channels.get(0).getId());
+        assertThat(statuses).hasSize(1);
+        assertThat(statuses.get(0).getUser().getId()).isEqualTo(user.getId());
     }
 
     @Test
     @DisplayName("PUBLIC 채널 수정 요청 시 모든 계층에서 올바르게 동작해야 한다")
-    void updatePublicChannelProcessIntegration() {
-        // given
-        ChannelDto channelDto = channelService.create(new PublicChannelCreateRequest("test", "test"));
+    void updatePublicChannelProcessIntegration() throws Exception {
+        // given: 채널 생성
+        ChannelDto channelDto = channelService.create(new PublicChannelCreateRequest("초기명", "초기설명"));
 
-        PublicChannelUpdateRequest publicChannelUpdateRequest = new PublicChannelUpdateRequest("수정", "수정");
-        // when
-        ChannelDto updateChannel = channelService.update(channelDto.id(), publicChannelUpdateRequest);
+        String json = """
+        {
+            "newName": "수정",
+            "newDescription": "수정"
+        }
+        """;
 
-        // then
-        Channel foundChannel = channelRepository.findById(channelDto.id()).orElseThrow();
+        // when & then
+        mockMvc.perform(put("/api/channels/" + channelDto.id())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("수정"))
+                .andExpect(jsonPath("$.id").value(channelDto.id().toString()));
 
-        assertThat(updateChannel.name()).isEqualTo(foundChannel.getName());
-        assertThat(updateChannel.id()).isEqualTo(foundChannel.getId());
+        Channel updated = channelRepository.findById(channelDto.id()).orElseThrow();
+        assertThat(updated.getName()).isEqualTo("수정");
     }
 
     /*
@@ -113,30 +150,32 @@ public class ChannelServiceIntegrationTest {
     * */
     @Test
     @DisplayName("채널 삭제 요청 시 모든 계층에서 올바르게 동작해야 한다")
-    void deleteChannelProcessIntegration() {
+    void deleteChannelProcessIntegration() throws Exception {
         // given
         BinaryContent binaryContent = new BinaryContent("test", 100L, "png");
-        binaryContentRepository.save(binaryContent);
-        binaryContentRepository.flush();
+        binaryContentRepository.saveAndFlush(binaryContent);
 
         binaryContentStorage.put(binaryContent.getId(), "test File".getBytes());
 
-        BinaryContent findBinaryContent = binaryContentRepository.findById(binaryContent.getId()).orElseThrow();
-
-        User user = userRepository.save(new User("test", "test@gmail.com", "test1234", findBinaryContent));
+        User user = userRepository.save(new User("test", "test@gmail.com", "test1234", binaryContent));
         UserStatus userStatus = userStatusRepository.save(new UserStatus(user, Instant.now()));
         user.setUserStatus(userStatus);
-
         userRepository.flush();
         userStatusRepository.flush();
 
-        Channel channel = channelRepository.save(new Channel(ChannelType.PUBLIC, "test", "test"));
+        Channel channel = channelRepository.saveAndFlush(new Channel(ChannelType.PUBLIC, "test", "test"));
 
-        messageRepository.save(new Message("test1", channel, user));
-        messageRepository.save(new Message("test2", channel, user));
-        messageRepository.save(new Message("test3", channel, user));
+        messageRepository.saveAll(List.of(
+                new Message("test1", channel, user),
+                new Message("test2", channel, user),
+                new Message("test3", channel, user)
+        ));
+        messageRepository.flush();
+
         // when
-        channelService.delete(channel.getId());
+        mockMvc.perform(delete("/api/channels/{channelId}", channel.getId())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent());
 
         // then
         assertThat(channelRepository.findById(channel.getId())).isEmpty();
