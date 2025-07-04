@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  AWS_REGION: ${{ vars.AWS_REGION }}
+  AWS_S3_REGION: ${{ vars.AWS_REGION }}
   ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY_URI }}
   ECS_SERVICE: ${{ vars.ECS_SERVICE }}
   ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
