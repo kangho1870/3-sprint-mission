@@ -24,4 +24,4 @@ RUN apk add --no-cache curl
 
 COPY --from=builder /app/app.jar app.jar
 
-ENTRYPOINT ["sh", "-c", "exec java $JVM_OPTS -jar app.jar"]
+ENTRYPOINT ["sh", "-c", "java $JVM_OPTS -jar app.jar"]
