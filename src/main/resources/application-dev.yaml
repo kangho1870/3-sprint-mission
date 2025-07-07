@@ -14,4 +14,4 @@ spring:
       ddl-auto: update
 logging:
   level:
-    root: info
+    root: debug
