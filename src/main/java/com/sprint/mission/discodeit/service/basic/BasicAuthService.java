@@ -9,8 +9,10 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.DiscodeitUserDetails;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -35,6 +37,8 @@ public class BasicAuthService implements AuthService {
         return userMapper.toDto(user);
     }
 
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public UserDto updateRole(UUID uuid, Role role) {
         User user = userRepository.findById(uuid)
