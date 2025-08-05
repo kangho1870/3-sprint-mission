@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.handler.CustomAccessDeniedHandler;
 import com.sprint.mission.discodeit.handler.CustomSessionExpiredStrategy;
 import com.sprint.mission.discodeit.handler.LoginFailureHandler;
 import com.sprint.mission.discodeit.handler.LoginSuccessHandler;
+import com.sprint.mission.discodeit.service.DiscodeitUserDetailsService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -57,7 +58,8 @@ public class SecurityConfig {
                                            LoginSuccessHandler loginSuccessHandler,
                                            LoginFailureHandler loginFailureHandler,
                                            CustomAccessDeniedHandler accessDeniedHandler,
-                                           SessionRegistry sessionRegistry) throws Exception {
+                                           SessionRegistry sessionRegistry,
+                                           DiscodeitUserDetailsService discodeitUserDetailsService) throws Exception {
 
         http
                 .csrf(csrf -> csrf
@@ -97,7 +99,12 @@ public class SecurityConfig {
                                 .sessionRegistry(sessionRegistry)
                                 .expiredSessionStrategy(new CustomSessionExpiredStrategy())
                         )
-                );
+                )
+                .rememberMe(rember -> rember
+                        .rememberMeParameter("remember-me")
+                        .tokenValiditySeconds(60)
+                        .alwaysRemember(false)
+                        .userDetailsService(discodeitUserDetailsService));
 
         return http.build();
     }
