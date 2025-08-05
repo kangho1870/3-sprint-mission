@@ -30,7 +30,9 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                         .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
-                );
+                )
+                .formLogin(login -> login
+                        .loginProcessingUrl("/api/auth/login"));
         return http.build();
     }
 

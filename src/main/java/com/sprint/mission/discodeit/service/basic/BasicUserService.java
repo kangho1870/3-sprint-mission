@@ -16,6 +16,7 @@ import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +34,7 @@ public class BasicUserService implements UserService {
     private final UserStatusRepository userStatusRepository;
     private final UserMapper userMapper;
     private final BinaryContentStorage binaryContentStorage;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     @Override
@@ -58,7 +60,7 @@ public class BasicUserService implements UserService {
                     return saveBinaryContent;
                 })
                 .orElse(null);
-        String password = userCreateRequest.password();
+        String password = passwordEncoder.encode(userCreateRequest.password());
 
         User user = new User(username, email, password, profile);
         User createdUser = userRepository.save(user);
