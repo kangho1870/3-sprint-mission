@@ -42,7 +42,7 @@ public class GlobalExceptionHandler {
                         "잘못된 요청입니다.",
                         Map.of("message", message),
                         ex.getClass().getSimpleName(),
-                        400,
+                        403,
                         Instant.now()
                         ));
     }
@@ -53,24 +53,4 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(e.getMessage());
     }
-
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        String message = ex.getBindingResult().getFieldErrors().stream()
-                .map(e -> e.getField() + ": " + e.getDefaultMessage())
-                .findFirst()
-                .orElse("잘못된 요청입니다.");
-
-        return ResponseEntity
-                .status(HttpStatus.FORBIDDEN)
-                .body(new ErrorResponse(
-                        "ACCESS_DENIED",
-                        "해당 리소스에 접근할 권한이 없습니다.",
-                        Map.of("message", message),
-                        ex.getClass().getSimpleName(),
-                        403,
-                        Instant.now()
-                ));
-    }
-
 }

@@ -54,7 +54,6 @@ public class SecurityConfig {
                         .logoutUrl("/api/auth/logout")
                         .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT)))
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().authenticated()
                         .requestMatchers("/api/auth/csrf-token").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                         .requestMatchers("/api/auth/login").permitAll()
@@ -65,7 +64,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
-                        ).permitAll())
+                        ).permitAll()
+                        .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex
                         .accessDeniedHandler(accessDeniedHandler));
 
