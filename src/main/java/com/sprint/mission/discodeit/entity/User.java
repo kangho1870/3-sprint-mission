@@ -87,4 +87,8 @@ public class User extends BaseUpdatableEntity {
         this.userStatus = userStatus;
         userStatus.setUser(this);
     }
+
+    public void updateRole(Role role) {
+        this.role = role;
+    }
 }
