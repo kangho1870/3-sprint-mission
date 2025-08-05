@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -112,6 +113,7 @@ public class UserController {
                     schema = @Schema(type = "string", format = "binary")
             )
     )
+    @PreAuthorize("@authGuard.isSelf(#userId)")
     @PatchMapping("/{userId}")
     public ResponseEntity<UserDto> update(
             @PathVariable("userId") UUID userId,
@@ -144,6 +146,7 @@ public class UserController {
             required = true,
             schema = @Schema(type = "string", format = "uuid")
     )
+    @PreAuthorize("@authGuard.isSelf(#userId)")
     @DeleteMapping("/{userId}")
     public ResponseEntity<?> delete(@PathVariable("userId") UUID userId) {
         userService.delete(userId);
