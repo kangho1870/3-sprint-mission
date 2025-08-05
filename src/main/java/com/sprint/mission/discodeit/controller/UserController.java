@@ -2,15 +2,11 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.ErrorResponse;
 import com.sprint.mission.discodeit.dto.data.UserDto;
-import com.sprint.mission.discodeit.dto.data.UserStatusDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -46,7 +42,6 @@ import java.util.UUID;
 public class UserController {
 
     private final UserService userService;
-    private final UserStatusService userStatusService;
 
     @Operation(
             summary = "User 등록",
@@ -178,45 +173,6 @@ public class UserController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(users);
-    }
-
-    @Operation(
-            summary = "User 온라인 상태 업데이트",
-            operationId = "updateUserStatusByUserId"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "User 온라인 상태가 성공적으로 업데이트됨",
-                    content = @Content(
-                            mediaType = "*/*",
-                            schema = @Schema(implementation = UserStatus.class)
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "해당 User의 UserStatus를 찾을 수 없음",
-                    content = @Content(
-                            mediaType = "*/*",
-                            examples = @ExampleObject(value = "UserStatus with userId {userId} not found")
-                    )
-            )
-    })
-    @Parameter(
-            name = "userId",
-            description = "상태를 변경할 User ID",
-            required = true,
-            schema = @Schema(type = "string", format = "uuid")
-    )
-    @PatchMapping("/{userId}/userStatus")
-    public ResponseEntity<UserStatusDto> updateUserStatusByUserId(@PathVariable("userId") UUID userId,
-                                                                  @RequestBody UserStatusUpdateRequest request) {
-
-        UserStatusDto updatedUserStatus = userStatusService.updateByUserId(userId, request);
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(updatedUserStatus);
-
     }
 
     private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profileFile) {

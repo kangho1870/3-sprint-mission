@@ -25,6 +25,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 import java.util.List;
 import java.util.stream.IntStream;
@@ -122,33 +123,29 @@ public class SecurityConfig {
     }
 
     @Bean
+    public HttpSessionEventPublisher httpSessionEventPublisher() {
+        return new HttpSessionEventPublisher();
+    }
+
+    @Bean
     public SessionRegistry sessionRegistry() {
 
         // 세션 레지스트리 구현체를 상속받아 커스터마이징
         SessionRegistryImpl sessionRegistry = new SessionRegistryImpl() {
 
-            // 새 세션 등록 시 추가 로깅
             @Override
             public void registerNewSession(String sessionId, Object principal) {
-                System.out.println("[SessionRegistry] 새 세션 등록 - 사용자: " + principal + ", 세션ID: " + sessionId);
                 super.registerNewSession(sessionId, principal);
-                System.out.println("[SessionRegistry] 현재 활성 세션 수: " + getAllSessions(principal, false).size());
             }
 
-            // 세션 제거 시 추가 로깅
             @Override
             public void removeSessionInformation(String sessionId) {
-                System.out.println("[SessionRegistry] 세션 제거 - 세션ID: " + sessionId);
                 super.removeSessionInformation(sessionId);
             }
 
-            // 세션 정보 조회 시 추가 로깅
             @Override
             public SessionInformation getSessionInformation(String sessionId) {
                 SessionInformation info = super.getSessionInformation(sessionId);
-                if (info != null) {
-                    System.out.println("[SessionRegistry] 세션 정보 조회 - 세션ID: " + sessionId + ", 만료됨: " + info.isExpired());
-                }
                 return info;
             }
         };
