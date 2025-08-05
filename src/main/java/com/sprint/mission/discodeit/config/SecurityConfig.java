@@ -16,6 +16,7 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
@@ -41,6 +42,17 @@ public class SecurityConfig {
     }
 
     @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return web -> web.ignoring()
+                .requestMatchers(
+                        "/",             // root 요청
+                        "/index.html",   // SPA 진입점
+                        "/assets/**",    // js/css 번들
+                        "/favicon.ico"   // 파비콘
+                );
+    }
+
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            LoginSuccessHandler loginSuccessHandler,
                                            LoginFailureHandler loginFailureHandler,
@@ -60,27 +72,27 @@ public class SecurityConfig {
                         .logoutUrl("/api/auth/logout")
                         .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT)))
                 .authorizeHttpRequests(auth -> auth
+                        // 인증 없이 허용할 API
                         .requestMatchers("/api/auth/csrf-token").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                         .requestMatchers("/api/auth/login").permitAll()
                         .requestMatchers("/api/auth/logout").permitAll()
-                        // Actuator 헬스 체크 및 메트릭 요청 허용
-                        .requestMatchers("/actuator/**").permitAll()
-                        // Swagger UI 및 문서 요청 허용
+
+                        // 정적 리소스
                         .requestMatchers(
-                                "/swagger-ui/**",
-                                "/swagger-ui.html"
+                                "/", "/**", "/index.html", "/assets/**", "/favicon.ico"
                         ).permitAll()
 
+                        // API 보호
                         .requestMatchers("/api/**").authenticated()
-
-                        .anyRequest().permitAll())
+                )
                 .exceptionHandling(ex -> ex
                         .accessDeniedHandler(accessDeniedHandler))
                 .sessionManagement(management -> management
                         .sessionFixation().migrateSession()
                         .sessionConcurrency(concurrency -> concurrency
                                 .maximumSessions(1)
+                                .expiredUrl("/api/auth/login")
                                 .maxSessionsPreventsLogin(false)
                                 .sessionRegistry(sessionRegistry)
                                 .expiredSessionStrategy(new CustomSessionExpiredStrategy())

@@ -12,10 +12,10 @@ import java.util.UUID;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
-    @EntityGraph(attributePaths = {"userStatus", "profile"})
+    @EntityGraph(attributePaths = {"profile"})
     List<User> findAll();
 
-    @EntityGraph(attributePaths = {"userStatus", "profile"})
+    @EntityGraph(attributePaths = {"profile"})
     Optional<User> findById(UUID uuid);
 
     public Optional<User> findByUsername(String username);

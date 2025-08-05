@@ -19,4 +19,4 @@ logging:
     # Spring Web 관련 디버그 로그 활성화
     org.springframework.web: DEBUG
     # 애플리케이션 패키지 디버그 로그 활성화
-    com.ohgiraffers.sessionauth: DEBUG
+    com.sprint.mission.discodeit: DEBUG
