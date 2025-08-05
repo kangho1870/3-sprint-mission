@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.handler.LoginSuccessHandler;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -43,7 +44,21 @@ public class SecurityConfig {
                         .failureHandler(loginFailureHandler))
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
-                        .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT)));
+                        .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT)))
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest().authenticated()
+                        .requestMatchers("/api/auth/csrf-token").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+                        .requestMatchers("/api/auth/login").permitAll()
+                        .requestMatchers("/api/auth/logout").permitAll()
+                        // Actuator 헬스 체크 및 메트릭 요청 허용
+                        .requestMatchers("/actuator/**").permitAll()
+                        // Swagger UI 및 문서 요청 허용
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/swagger-ui.html"
+                        ).permitAll());
+
         return http.build();
     }
 
