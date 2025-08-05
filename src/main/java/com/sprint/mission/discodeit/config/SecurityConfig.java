@@ -65,7 +65,10 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()
-                        .anyRequest().authenticated())
+
+                        .requestMatchers("/api/**").authenticated()
+
+                        .anyRequest().permitAll())
                 .exceptionHandling(ex -> ex
                         .accessDeniedHandler(accessDeniedHandler));
 
