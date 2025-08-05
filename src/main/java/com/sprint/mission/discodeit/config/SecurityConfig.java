@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.config;
 
+import com.sprint.mission.discodeit.handler.CustomAccessDeniedHandler;
 import com.sprint.mission.discodeit.handler.LoginFailureHandler;
 import com.sprint.mission.discodeit.handler.LoginSuccessHandler;
 import org.springframework.boot.CommandLineRunner;
@@ -33,7 +34,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            LoginSuccessHandler loginSuccessHandler,
-                                           LoginFailureHandler loginFailureHandler) throws Exception {
+                                           LoginFailureHandler loginFailureHandler,
+                                           CustomAccessDeniedHandler accessDeniedHandler) throws Exception {
 
         http
                 .csrf(csrf -> csrf
@@ -59,7 +61,9 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
-                        ).permitAll());
+                        ).permitAll())
+                .exceptionHandling(ex -> ex
+                        .accessDeniedHandler(accessDeniedHandler));
 
         return http.build();
     }
