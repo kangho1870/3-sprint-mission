@@ -18,12 +18,12 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
@@ -80,27 +80,31 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/login").permitAll()
                         .requestMatchers("/api/auth/logout").permitAll()
 
-                        // 정적 리소스
                         .requestMatchers(
-                                "/", "/**", "/index.html", "/assets/**", "/favicon.ico"
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/swagger-resources/**",
+                                "/webjars/**"
                         ).permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
 
-                        // API 보호
                         .requestMatchers("/api/**").authenticated()
                 )
                 .exceptionHandling(ex -> ex
-                        .accessDeniedHandler(accessDeniedHandler))
+                        .accessDeniedHandler(accessDeniedHandler)
+                        .authenticationEntryPoint(new Http403ForbiddenEntryPoint())
+                )
                 .sessionManagement(management -> management
                         .sessionFixation().migrateSession()
                         .sessionConcurrency(concurrency -> concurrency
                                 .maximumSessions(1)
-                                .expiredUrl("/api/auth/login")
                                 .maxSessionsPreventsLogin(false)
                                 .sessionRegistry(sessionRegistry)
                                 .expiredSessionStrategy(new CustomSessionExpiredStrategy())
                         )
                 )
-                .rememberMe(rember -> rember
+                .rememberMe(remember -> remember
                         .rememberMeParameter("remember-me")
                         .tokenValiditySeconds(60)
                         .alwaysRemember(false)
@@ -148,27 +152,6 @@ public class SecurityConfig {
 
     @Bean
     public SessionRegistry sessionRegistry() {
-
-        // 세션 레지스트리 구현체를 상속받아 커스터마이징
-        SessionRegistryImpl sessionRegistry = new SessionRegistryImpl() {
-
-            @Override
-            public void registerNewSession(String sessionId, Object principal) {
-                super.registerNewSession(sessionId, principal);
-            }
-
-            @Override
-            public void removeSessionInformation(String sessionId) {
-                super.removeSessionInformation(sessionId);
-            }
-
-            @Override
-            public SessionInformation getSessionInformation(String sessionId) {
-                SessionInformation info = super.getSessionInformation(sessionId);
-                return info;
-            }
-        };
-
-        return sessionRegistry;
+        return new SessionRegistryImpl();
     }
 }
