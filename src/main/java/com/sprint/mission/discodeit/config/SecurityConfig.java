@@ -1,9 +1,8 @@
 package com.sprint.mission.discodeit.config;
 
 import com.sprint.mission.discodeit.handler.CustomAccessDeniedHandler;
-import com.sprint.mission.discodeit.handler.CustomSessionExpiredStrategy;
+import com.sprint.mission.discodeit.handler.JwtLoginSuccessHandler;
 import com.sprint.mission.discodeit.handler.LoginFailureHandler;
-import com.sprint.mission.discodeit.handler.LoginSuccessHandler;
 import com.sprint.mission.discodeit.service.DiscodeitUserDetailsService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -18,6 +17,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -55,7 +55,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
-                                           LoginSuccessHandler loginSuccessHandler,
+                                           JwtLoginSuccessHandler loginSuccessHandler,
                                            LoginFailureHandler loginFailureHandler,
                                            CustomAccessDeniedHandler accessDeniedHandler,
                                            SessionRegistry sessionRegistry,
@@ -96,13 +96,7 @@ public class SecurityConfig {
                         .authenticationEntryPoint(new Http403ForbiddenEntryPoint())
                 )
                 .sessionManagement(management -> management
-                        .sessionFixation().migrateSession()
-                        .sessionConcurrency(concurrency -> concurrency
-                                .maximumSessions(1)
-                                .maxSessionsPreventsLogin(false)
-                                .sessionRegistry(sessionRegistry)
-                                .expiredSessionStrategy(new CustomSessionExpiredStrategy())
-                        )
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .rememberMe(remember -> remember
                         .rememberMeParameter("remember-me")
