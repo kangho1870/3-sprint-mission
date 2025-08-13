@@ -6,6 +6,8 @@ import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.sprint.mission.discodeit.service.DiscodeitUserDetails;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
@@ -165,5 +167,29 @@ public class JwtTokenProvider {
         } catch (Exception e) {
             throw new IllegalArgumentException("Invalid JWT token", e);
         }
+    }
+
+    public void expireRefreshCookie(HttpServletResponse response) {
+
+        System.out.println("[TokenProvider] expireRefreshCookie 호출됨: 만료 쿠키 응답에 추가");
+        Cookie cookie = generateRefreshTokenExpirationCookie();
+
+        response.addCookie(cookie);
+    }
+
+    public Cookie generateRefreshTokenExpirationCookie() {
+
+        System.out.println("[TokenProvider] generateRefreshTokenExpirationCookie 호출됨: Refresh Token 만료 쿠키 생성");
+
+        Cookie cookie = new Cookie("REFRESH-TOKEN", "");
+
+        cookie.setHttpOnly(true);
+        cookie.setSecure(false);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);		// 쿠키 만료 시간을 0으로 설정하여 즉시 만료시킨다
+
+        System.out.println("[TokenProvider] generateRefreshTokenExpirationCookie 완료");
+
+        return cookie;
     }
 }
