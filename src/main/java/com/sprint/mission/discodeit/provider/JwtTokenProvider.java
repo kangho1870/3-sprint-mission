@@ -151,4 +151,19 @@ public class JwtTokenProvider {
         log.info("[TokenProvider] 토큰 생성 완료 {}", completedJWT);
         return completedJWT;
     }
+
+    public String getUsernameFromToken(String token) {
+        try {
+            log.info("[TokenProvider] getUsernameFromToken 호출됨: subject 추출 시작");
+
+            SignedJWT signedJWT = SignedJWT.parse(token);
+            String subject = signedJWT.getJWTClaimsSet().getSubject();
+
+            log.info("[TokenProvider] getUsernameFromToken 결과: subject= {}", subject);
+
+            return subject;
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid JWT token", e);
+        }
+    }
 }

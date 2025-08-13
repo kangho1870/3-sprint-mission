@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.config;
 
+import com.sprint.mission.discodeit.filter.JwtAuthenticationFilter;
 import com.sprint.mission.discodeit.handler.CustomAccessDeniedHandler;
 import com.sprint.mission.discodeit.handler.JwtLoginSuccessHandler;
 import com.sprint.mission.discodeit.handler.LoginFailureHandler;
@@ -24,6 +25,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
@@ -58,7 +60,7 @@ public class SecurityConfig {
                                            JwtLoginSuccessHandler loginSuccessHandler,
                                            LoginFailureHandler loginFailureHandler,
                                            CustomAccessDeniedHandler accessDeniedHandler,
-                                           SessionRegistry sessionRegistry,
+                                           JwtAuthenticationFilter jwtAuthenticationFilter,
                                            DiscodeitUserDetailsService discodeitUserDetailsService) throws Exception {
 
         http
@@ -102,8 +104,9 @@ public class SecurityConfig {
                         .rememberMeParameter("remember-me")
                         .tokenValiditySeconds(60)
                         .alwaysRemember(false)
-                        .userDetailsService(discodeitUserDetailsService));
-
+                        .userDetailsService(discodeitUserDetailsService)
+                )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
