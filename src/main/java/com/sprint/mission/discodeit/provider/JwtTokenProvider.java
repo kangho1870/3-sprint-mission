@@ -5,18 +5,19 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import com.sprint.mission.discodeit.service.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.dto.data.UserDto;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 @Slf4j
@@ -35,6 +36,12 @@ public class JwtTokenProvider {
     private final JWSSigner refreshTokenSigner;
     // 리프레시 토큰의 서명을 검증하기 위한 검증자
     private final JWSVerifier refreshTokenVerifier;
+    
+    // 로그아웃된 access 토큰들을 저장하는 블랙리스트
+    private final ConcurrentHashMap<String, Long> blacklistedAccessTokens = new ConcurrentHashMap<>();
+
+    // 로그아웃된 refresh 토큰들을 저장하는 블랙리스트
+    private final ConcurrentHashMap<String, Long> blacklistedRefreshTokens = new ConcurrentHashMap<>();
 
     public JwtTokenProvider(
             @Value("${jwt.access-token.secret}") String accessTokenSecret,
@@ -54,32 +61,44 @@ public class JwtTokenProvider {
         this.refreshTokenVerifier = new MACVerifier(refreshSecretBytes);
     }
 
-    public String generateAccessToken(DiscodeitUserDetails discodeitUserDetails) throws JOSEException {
+    public String generateAccessToken(UserDto userDto) throws JOSEException {
 
-        log.info("[TokenProvider] generateAccessToken 호출됨 엑세스 토큰 생성 호출. 호출자 {}", discodeitUserDetails.getUsername());
+        log.info("[TokenProvider] generateAccessToken 호출됨 엑세스 토큰 생성 호출. 호출자 {}", userDto.username());
 
         // 생성할 토큰의 타입이 "access"인 경우 액세스 토큰을 생성한다.
-        return generateToken(discodeitUserDetails, accessTokenExpirationMs, accessTokenSigner, "access");
+        return generateToken(userDto, accessTokenExpirationMs, accessTokenSigner, "access");
     }
 
-    public String generateRefreshToken(DiscodeitUserDetails discodeitUserDetails) throws JOSEException {
+    public String generateRefreshToken(UserDto userDto) throws JOSEException {
 
-        System.out.println("[TokenProvider] generateRefreshToken 호출됨: " + discodeitUserDetails.getUsername() + "의 리프레시 토큰 생성");
+        System.out.println("[TokenProvider] generateRefreshToken 호출됨: " + userDto.username() + "의 리프레시 토큰 생성");
 
         // 생성할 토큰의 타입이 "refresh"인 경우 리프레시 토큰을 생성한다.
-        return generateToken(discodeitUserDetails, refreshTokenExpirationMs, refreshTokenSigner, "refresh");
+        return generateToken(userDto, refreshTokenExpirationMs, refreshTokenSigner, "refresh");
     }
 
     public boolean validateAccessToken(String accessToken) {
         log.info("[TokenProvider] 토큰 검증 호출 : {}", accessToken);
 
+        // 블랙리스트에 있는 토큰인지 확인
+        if (blacklistedAccessTokens.containsKey(accessToken)) {
+            log.error("[TokenProvider] 블랙리스트에 있는 access 토큰입니다: {}", accessToken);
+            return false;
+        }
+
         return verifyToken(accessToken, accessTokenVerifier, "access");
     }
 
-    public boolean validateRefreshToken(String accessToken) {
-        log.info("[TokenProvider] 리프레시 토큰 검증 호출 : {}", accessToken);
+    public boolean validateRefreshToken(String refreshToken) {
+        log.info("[TokenProvider] 리프레시 토큰 검증 호출 : {}", refreshToken);
 
-        return verifyToken(accessToken, refreshTokenVerifier, "refresh");
+        // 블랙리스트에 있는 토큰인지 확인
+        if (blacklistedRefreshTokens.containsKey(refreshToken)) {
+            log.error("[TokenProvider] 블랙리스트에 있는 access 토큰입니다: {}", refreshToken);
+            return false;
+        }
+
+        return verifyToken(refreshToken, refreshTokenVerifier, "refresh");
     }
 
     private boolean verifyToken(String token, JWSVerifier verifier, String expectedType) {
@@ -110,7 +129,7 @@ public class JwtTokenProvider {
         }
     }
 
-    private String generateToken(DiscodeitUserDetails discodeitUserDetails, int expirationMs, JWSSigner signer, String type ) throws JOSEException {
+    private String generateToken(UserDto userDto, int expirationMs, JWSSigner signer, String type ) throws JOSEException {
 
         // 토큰 식별자 생성
         String tokenId = UUID.randomUUID().toString();
@@ -122,19 +141,16 @@ public class JwtTokenProvider {
         // 토큰의 클레임 설정
         JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
                 // 토큰 주체(subject)
-                .subject(discodeitUserDetails.getUsername())
+                .subject(userDto.username())
                 // 토큰 식별자(jti)
                 .jwtID(tokenId)
                 // userId
-                .claim("userId", discodeitUserDetails.getUserDto().id())
+                .claim("userId", userDto.id())
                 // 토큰 타입
                 .claim("type", type)
                 // 사용자 권한
                 .claim("roles",
-                        discodeitUserDetails.getAuthorities()
-                                .stream()
-                                .map(GrantedAuthority::getAuthority)
-                                .toList()
+                        List.of(userDto.role())
                 )
                 // 토큰 발급 시간(iat)
                 .issueTime(now)
@@ -176,17 +192,42 @@ public class JwtTokenProvider {
 
         response.addCookie(cookie);
     }
+    
+    // Access 토큰을 블랙리스트에 추가
+    public void blacklistAccessToken(String accessToken) {
+        if (accessToken != null && !accessToken.isEmpty()) {
+            blacklistedAccessTokens.put(accessToken, System.currentTimeMillis());
+            log.info("[TokenProvider] Access 토큰을 블랙리스트에 추가: {}", accessToken);
+        }
+    }
+
+    // Access 토큰을 블랙리스트에 추가
+    public void blacklistRefreshToken(String refreshToken) {
+        if (refreshToken != null && !refreshToken.isEmpty()) {
+            blacklistedRefreshTokens.put(refreshToken, System.currentTimeMillis());
+            log.info("[TokenProvider] Access 토큰을 블랙리스트에 추가: {}", refreshToken);
+        }
+    }
+    
+    // 만료된 토큰들을 정리 (선택적)
+    public void cleanupExpiredTokens() {
+        long currentTime = System.currentTimeMillis();
+        long expirationTime = currentTime - (accessTokenExpirationMs); // access 토큰 만료 시간만큼 이전
+        
+        blacklistedAccessTokens.entrySet().removeIf(entry -> entry.getValue() < expirationTime);
+        log.info("[TokenProvider] 만료된 블랙리스트 토큰 정리 완료");
+    }
 
     public Cookie generateRefreshTokenExpirationCookie() {
 
         System.out.println("[TokenProvider] generateRefreshTokenExpirationCookie 호출됨: Refresh Token 만료 쿠키 생성");
 
-        Cookie cookie = new Cookie("REFRESH-TOKEN", "");
+        Cookie cookie = new Cookie("REFRESH_TOKEN", "");
 
         cookie.setHttpOnly(true);
         cookie.setSecure(false);
-        cookie.setPath("/");
-        cookie.setMaxAge(0);		// 쿠키 만료 시간을 0으로 설정하여 즉시 만료시킨다
+        cookie.setPath("/api/auth");
+        cookie.setMaxAge(0);
 
         System.out.println("[TokenProvider] generateRefreshTokenExpirationCookie 완료");
 

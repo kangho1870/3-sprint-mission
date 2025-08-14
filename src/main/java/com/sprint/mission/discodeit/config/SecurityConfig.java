@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.config;
 import com.sprint.mission.discodeit.filter.JwtAuthenticationFilter;
 import com.sprint.mission.discodeit.handler.CustomAccessDeniedHandler;
 import com.sprint.mission.discodeit.handler.JwtLoginSuccessHandler;
+import com.sprint.mission.discodeit.handler.JwtLogoutHandler;
 import com.sprint.mission.discodeit.handler.LoginFailureHandler;
 import com.sprint.mission.discodeit.service.DiscodeitUserDetailsService;
 import org.springframework.boot.CommandLineRunner;
@@ -14,6 +15,7 @@ import org.springframework.security.access.expression.method.DefaultMethodSecuri
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -21,6 +23,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -56,8 +59,19 @@ public class SecurityConfig {
     }
 
     @Bean
+    public DaoAuthenticationProvider authenticationProvider(UserDetailsService userDetailsService) {
+
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder());
+
+        return authProvider;
+    }
+
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            JwtLoginSuccessHandler loginSuccessHandler,
+                                           JwtLogoutHandler jwtLogoutHandler,
+                                           DaoAuthenticationProvider authenticationProvider,
                                            LoginFailureHandler loginFailureHandler,
                                            CustomAccessDeniedHandler accessDeniedHandler,
                                            JwtAuthenticationFilter jwtAuthenticationFilter,
@@ -68,14 +82,24 @@ public class SecurityConfig {
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                         .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
                         .ignoringRequestMatchers("/api/auth/refresh")
+                        .ignoringRequestMatchers("/api/auth/logout")
+                        .ignoringRequestMatchers(request -> {
+                            String auth = request.getHeader("Authorization");
+                            return auth != null && auth.startsWith("Bearer ");
+                        })
                 )
                 .formLogin(login -> login
                         .loginProcessingUrl("/api/auth/login")
                         .successHandler(loginSuccessHandler)
-                        .failureHandler(loginFailureHandler))
+                        .failureHandler(loginFailureHandler)
+                        .permitAll()
+                )
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
-                        .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT)))
+                        .addLogoutHandler(jwtLogoutHandler)
+                        .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
+                        .permitAll()
+                )
                 .authorizeHttpRequests(auth -> auth
                         // 인증 없이 허용할 API
                         .requestMatchers("/api/auth/csrf-token").permitAll()
@@ -102,12 +126,8 @@ public class SecurityConfig {
                 .sessionManagement(management -> management
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                .rememberMe(remember -> remember
-                        .rememberMeParameter("remember-me")
-                        .tokenValiditySeconds(60)
-                        .alwaysRemember(false)
-                        .userDetailsService(discodeitUserDetailsService)
-                )
+
+                .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.nimbusds.jose.JOSEException;
 import com.sprint.mission.discodeit.dto.ErrorCode;
 import com.sprint.mission.discodeit.dto.data.JwtDto;
+import com.sprint.mission.discodeit.dto.data.JwtInformation;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
@@ -11,10 +12,10 @@ import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.provider.JwtTokenProvider;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.registry.JwtRegistry;
 import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.DiscodeitUserDetailsService;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -37,6 +38,7 @@ public class BasicAuthService implements AuthService {
     private final SessionRegistry sessionRegistry;
     private final JwtTokenProvider jwtTokenProvider;
     private final DiscodeitUserDetailsService discodeitUserDetailsService;
+    private final JwtRegistry jwtRegistry;
 
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
@@ -74,8 +76,7 @@ public class BasicAuthService implements AuthService {
 
     @Override
     public JwtDto refreshToken(String refreshToken, HttpServletResponse response) {
-
-        if (refreshToken == null || !jwtTokenProvider.validateRefreshToken(refreshToken)) {
+        if (!jwtRegistry.hasActiveJwtInformationByRefreshToken(refreshToken)) {
             throw new NotValidTokenException(
                     Instant.now(),
                     ErrorCode.TOKEN_NOT_VALID,
@@ -88,14 +89,17 @@ public class BasicAuthService implements AuthService {
         DiscodeitUserDetails userDetails = (DiscodeitUserDetails) discodeitUserDetailsService.loadUserByUsername(username);
 
         JwtDto jwtDto = null;
+
         try {
-            String newAccessToken = jwtTokenProvider.generateAccessToken(userDetails);
-            String newRefreshToken = jwtTokenProvider.generateRefreshToken(userDetails);
+            // 토큰 로테이션 (새로운 토큰 생성 및 기존 토큰 무효화)
+            String newAccessToken = jwtTokenProvider.generateAccessToken(userDetails.getUserDto());
+            String newRefreshToken = jwtTokenProvider.generateRefreshToken(userDetails.getUserDto());
 
-            jwtTokenProvider.expireRefreshCookie(response);
+            JwtInformation newJwtInfo = new JwtInformation(userDetails.getUserDto(), newAccessToken, newRefreshToken);
 
-            response.addCookie(new Cookie("REFRESH-TOKEN", newRefreshToken));
-            jwtDto = new JwtDto(userDetails.getUserDto(), newAccessToken);
+            JwtInformation jwtInformation = jwtRegistry.rotateJwtInformation(refreshToken, newJwtInfo);
+
+            jwtDto = new JwtDto(jwtInformation.userDto(), jwtInformation.accessToken());
         } catch (JOSEException e) {
             throw new RuntimeException(e);
         }

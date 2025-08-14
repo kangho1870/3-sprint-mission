@@ -41,7 +41,7 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public ResponseEntity<JwtDto> refreshToken(
-            @CookieValue(name = "REFRESH-TOKEN", required = false) String refreshToken,
+            @CookieValue(name = "REFRESH_TOKEN", required = false) String refreshToken,
             HttpServletResponse response) {
         JwtDto jwtDto = authService.refreshToken(refreshToken, response);
 

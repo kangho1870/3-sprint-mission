@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.provider.JwtTokenProvider;
+import com.sprint.mission.discodeit.repository.registry.JwtRegistry;
 import com.sprint.mission.discodeit.service.DiscodeitUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -13,6 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -25,8 +27,9 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final ObjectMapper objectMapper;
+    private final JwtRegistry jwtRegistry;
     private final JwtTokenProvider jwtTokenProvider;
-    private final DiscodeitUserDetailsService  discodeitUserDetailsService;
+    private final DiscodeitUserDetailsService discodeitUserDetailsService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -36,30 +39,31 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (StringUtils.hasText(token)) {
                 log.info("[JwtAuthenticationFilter] 토큰 추출 성공");
 
-                if (jwtTokenProvider.validateAccessToken(token)) {
-                    // 토큰에서 사용자명 추출
-                    String username = jwtTokenProvider.getUsernameFromToken(token);
-
-                    // 사용자 정보 로드
-                    UserDetails userDetails = discodeitUserDetailsService.loadUserByUsername(username);
-
-                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                            userDetails,
-                            null,
-                            userDetails.getAuthorities()
-                    );
-
-                    // 인증 객체에 현재 요청 정보를 추가
-                    authentication.setDetails(authentication.getDetails());
-
-                    // 인증 객체를 SecurityContext에 저장
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-                    log.info("[JwtAuthenticationFilter] SecurityContext 인증 설정 완료. {}", authentication);
+                if (!jwtRegistry.hasActiveJwtInformationByAccessToken(token)) {
+                    sendUnauthorized(response, "유효하지 않은 토큰 입니다.");
                 }
+                // 토큰에서 사용자명 추출
+                String username = jwtTokenProvider.getUsernameFromToken(token);
+
+                // 사용자 정보 로드
+                UserDetails userDetails = discodeitUserDetailsService.loadUserByUsername(username);
+
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                        userDetails,
+                        null,
+                        userDetails.getAuthorities()
+                );
+
+                // 인증 객체에 현재 요청 정보를 추가
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                // 인증 객체를 SecurityContext에 저장
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                log.info("[JwtAuthenticationFilter] SecurityContext 인증 설정 완료. {}", authentication);
             }
         } catch (Exception e) {
             // 인증 과정에서 예외 발생 시 인증 컨텍스트를 초기화하고 401 응답을 반환한다.
-            System.out.println("[JwtAuthenticationFilter] 예외 발생: " + e.getMessage());
+            log.info("[JwtAuthenticationFilter] 예외 발생: {} ", e.getMessage());
             SecurityContextHolder.clearContext();
             sendUnauthorized(response, "JWT authentication failed");
             return;
