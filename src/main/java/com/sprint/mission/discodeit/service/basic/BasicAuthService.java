@@ -19,13 +19,11 @@ import com.sprint.mission.discodeit.service.DiscodeitUserDetailsService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -50,24 +48,8 @@ public class BasicAuthService implements AuthService {
         user.updateRole(role);
         userRepository.save(user);
 
-        List<Object> allPrincipals = sessionRegistry.getAllPrincipals();
-
         try {
-            for (Object principal : allPrincipals) {
-
-                DiscodeitUserDetails userDetails = (DiscodeitUserDetails) principal;
-                String principalName = userDetails.getUsername();
-
-                if (user.getUsername().equals(principalName)) {
-                    List<SessionInformation> sessions = sessionRegistry.getAllSessions(principal, false);
-
-                    for (SessionInformation session : sessions) {
-                        session.expireNow();
-                    }
-
-                    break;
-                }
-            }
+            jwtRegistry.inValidJwtInformationByUserId(user.getId());
         } catch (Exception e) {
             e.printStackTrace();
         }
