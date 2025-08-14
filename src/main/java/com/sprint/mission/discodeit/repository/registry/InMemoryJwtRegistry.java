@@ -150,17 +150,24 @@ public class InMemoryJwtRegistry implements JwtRegistry {
         log.info("[JwtRegistry] JWT 토큰 로테이션 시작");
 
         Queue<JwtInformation> jwtInformationQueue = origin.get(newjwtInformation.userDto().id());
+        
+        if (jwtInformationQueue != null) {
+            // 기존 토큰들을 블랙리스트에 추가하고 제거
+            jwtInformationQueue.removeIf(jwt -> {
+                if (jwt.refreshToken().equals(refreshToken)) {
+                    jwtTokenProvider.blacklistAccessToken(jwt.accessToken());
+                    jwtTokenProvider.blacklistRefreshToken(jwt.refreshToken());
+                    return true; // 제거
+                }
+                return false; // 유지
+            });
+        } else {
+            // Queue가 없으면 새로 생성
+            jwtInformationQueue = new ConcurrentLinkedQueue<>();
+        }
 
-        jwtInformationQueue.forEach(jwt -> {
-            if (jwt.refreshToken().equals(refreshToken)) {
-                jwtTokenProvider.blacklistAccessToken(jwt.accessToken());
-                jwtTokenProvider.blacklistRefreshToken(jwt.refreshToken());
-                jwtInformationQueue.remove(jwt);
-            }
-        });
-
+        // 새로운 JWT 정보 추가
         jwtInformationQueue.offer(newjwtInformation);
-
         origin.put(newjwtInformation.userDto().id(), jwtInformationQueue);
 
         return newjwtInformation;
