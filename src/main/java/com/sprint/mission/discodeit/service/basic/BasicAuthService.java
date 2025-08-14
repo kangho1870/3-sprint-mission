@@ -16,6 +16,7 @@ import com.sprint.mission.discodeit.repository.registry.JwtRegistry;
 import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.service.DiscodeitUserDetailsService;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -79,7 +80,15 @@ public class BasicAuthService implements AuthService {
 
             JwtInformation newJwtInfo = new JwtInformation(userDetails.getUserDto(), newAccessToken, newRefreshToken);
 
+            // 토큰 로테이션 수행
             JwtInformation jwtInformation = jwtRegistry.rotateJwtInformation(refreshToken, newJwtInfo);
+
+            // 새로운 refresh 토큰을 쿠키에 설정
+            Cookie newRefreshCookie = new Cookie("REFRESH_TOKEN", jwtInformation.refreshToken());
+            newRefreshCookie.setPath("/api/auth");
+            newRefreshCookie.setHttpOnly(true);
+            newRefreshCookie.setSecure(false);
+            response.addCookie(newRefreshCookie);
 
             jwtDto = new JwtDto(jwtInformation.userDto(), jwtInformation.accessToken());
         } catch (JOSEException e) {
