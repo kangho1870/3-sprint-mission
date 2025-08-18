@@ -68,17 +68,26 @@ public class InMemoryJwtRegistry implements JwtRegistry {
 
     @Override
     public boolean hasActiveJwtInformationByUserId(UUID userId) {
+        log.info("[JwtRegistry] 사용자 JWT 정보 확인 시작: userId={}", userId);
+        
         Queue<JwtInformation> userQueue = origin.get(userId);
         if (userQueue == null || userQueue.isEmpty()) {
+            log.info("[JwtRegistry] 사용자 JWT 정보 없음: userId={}", userId);
             return false;
         }
+        
+        log.info("[JwtRegistry] 사용자 JWT 정보 발견: userId={}, JWT 개수={}", userId, userQueue.size());
         
         // Queue에서 유효한 JWT 정보가 있는지 확인하고 만료된 토큰 정리
         boolean hasValidJwt = false;
         Queue<JwtInformation> validJwts = new ConcurrentLinkedQueue<>();
         
         for (JwtInformation jwtInfo : userQueue) {
-            if (jwtTokenProvider.validateAccessToken(jwtInfo.accessToken())) {
+            boolean isValid = jwtTokenProvider.validateAccessToken(jwtInfo.accessToken());
+            log.info("[JwtRegistry] JWT 토큰 검증: userId={}, isValid={}, accessToken={}", 
+                    userId, isValid, jwtInfo.accessToken().substring(0, 20) + "...");
+            
+            if (isValid) {
                 validJwts.offer(jwtInfo);
                 hasValidJwt = true;
             } else {
@@ -90,6 +99,7 @@ public class InMemoryJwtRegistry implements JwtRegistry {
         // 유효한 JWT 정보들로 Queue 업데이트 (만료된 것들 제거)
         origin.put(userId, validJwts);
         
+        log.info("[JwtRegistry] 사용자 JWT 정보 확인 완료: userId={}, hasValidJwt={}", userId, hasValidJwt);
         return hasValidJwt;
     }
 
