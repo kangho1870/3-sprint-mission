@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -74,6 +75,8 @@ public class BasicMessageService implements MessageService {
             eventPublisher.publishEvent(event);
         }
 
+        MessageCreatedEvent messageCreatedEvent = new MessageCreatedEvent(message.getId(), message.getChannel().getId(), message.getAuthor().getId(), message.getContent());
+        eventPublisher.publishEvent(messageCreatedEvent);
         return messageMapper.toDto(messageRepository.save(message));
     }
 
