@@ -16,6 +16,8 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -80,6 +82,7 @@ public class BasicUserService implements UserService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "users")
     @Override
     public List<UserDto> findAll() {
         return userRepository.findAll()
@@ -89,6 +92,7 @@ public class BasicUserService implements UserService {
     }
 
     @Transactional
+    @CacheEvict(value = "users")
     @Override
     public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest,
                           Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
@@ -131,6 +135,7 @@ public class BasicUserService implements UserService {
     }
 
     @Transactional
+    @CacheEvict(value = "users")
     @Override
     public void delete(UUID userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));

@@ -14,6 +14,7 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +35,7 @@ public class NotificationRequiredEventListener {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @CachePut(value = "userNotifications", key = "#event.authorId")
     public void on(MessageCreatedEvent event) {
         Channel channel = channelRepository.findById(event.channelId()).orElseThrow(() -> new ChannelNotFoundException(event.channelId()));
 
@@ -57,6 +59,7 @@ public class NotificationRequiredEventListener {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @CachePut(value = "userNotifications", key = "#event.changedId()")
     public void on(RoleUpdatedEvent event) {
         User user = userRepository.findById(event.changedId()).orElseThrow(() -> new UserNotFoundException(event.changedId()));
         String title = "권한이 변경되었습니다.";

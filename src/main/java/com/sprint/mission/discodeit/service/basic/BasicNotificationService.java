@@ -10,6 +10,8 @@ import com.sprint.mission.discodeit.repository.NotificationRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.NotificationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,6 +28,7 @@ public class BasicNotificationService implements NotificationService {
     private final NotificationRepository notificationRepository;
     private final NotificationMapper notificationMapper;
 
+    @Cacheable(value = "userNotifications", keyGenerator = "userIdKeyGenerator")
     @Override
     public List<NotificationDto> getNotifications() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -38,6 +41,7 @@ public class BasicNotificationService implements NotificationService {
                 .toList();
     }
 
+    @CachePut(value = "userNotifications", keyGenerator = "userIdKeyGenerator")
     @Override
     public void deleteNotification(UUID notificationId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
