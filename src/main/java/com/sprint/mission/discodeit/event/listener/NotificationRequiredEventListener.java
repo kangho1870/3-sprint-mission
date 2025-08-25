@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.MessageCreatedEvent;
 import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
+import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
@@ -15,6 +16,8 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CachePut;
+import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +36,7 @@ public class NotificationRequiredEventListener {
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
 
+    @Async("notificationTaskExecutor")
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @CachePut(value = "userNotifications", key = "#event.authorId")
@@ -57,6 +61,7 @@ public class NotificationRequiredEventListener {
         notificationRepository.saveAll(notifications);
     }
 
+    @Async("notificationTaskExecutor")
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @CachePut(value = "userNotifications", key = "#event.changedId()")
@@ -68,5 +73,21 @@ public class NotificationRequiredEventListener {
 
         Notification notification = new Notification(title, content, user);
         notificationRepository.save(notification);
+    }
+
+    @Async("notificationTaskExecutor")
+    @EventListener
+    public void on(S3UploadFailedEvent event) {
+
+        List<Notification> notifications = event.users().stream()
+                .map(user -> {
+                    return new Notification(
+                            "S3 파일 업로드 실패",
+                            "RequestsId: " + event.requestId() + "BinaryContentId: " + event.binaryContentId() + "Error: " + event.errorMessage(),
+                            user
+                    );
+                })
+                .toList();
+        notificationRepository.saveAll(notifications);
     }
 }

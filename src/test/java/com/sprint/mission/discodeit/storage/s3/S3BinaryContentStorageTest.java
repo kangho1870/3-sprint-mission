@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
@@ -36,6 +37,8 @@ public class S3BinaryContentStorageTest {
     private NotificationRepository notificationRepository;
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @BeforeEach
     public void setup() {
@@ -56,7 +59,7 @@ public class S3BinaryContentStorageTest {
         int presignedUrlExpiration = 600;
 
         storage = new S3BinaryContentStorage(
-                accessKey, secretKey, region, bucket, presignedUrlExpiration, binaryContentRepository, notificationRepository, userRepository
+                accessKey, secretKey, region, bucket, presignedUrlExpiration, binaryContentRepository, notificationRepository, userRepository, applicationEventPublisher
         );
     }
 

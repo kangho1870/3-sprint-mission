@@ -3,6 +3,8 @@ package com.sprint.mission.discodeit.storage;
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.Notification;
 import com.sprint.mission.discodeit.entity.Role;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
 import com.sprint.mission.discodeit.exception.binaryContent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
@@ -11,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -51,6 +54,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     private final BinaryContentRepository binaryContentRepository;
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
 
     public S3BinaryContentStorage(
@@ -59,7 +63,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
             @Value("${discodeit.storage.s3.region}") String region,
             @Value("${discodeit.storage.s3.bucket}") String bucket,
             @Value("${discodeit.storage.s3.presigned-url-expiration:600}") int presignedUrlExpiration,
-            BinaryContentRepository binaryContentRepository, NotificationRepository notificationRepository, UserRepository userRepository) {
+            BinaryContentRepository binaryContentRepository, NotificationRepository notificationRepository, UserRepository userRepository, ApplicationEventPublisher eventPublisher) {
         this.accessKey = accessKey;
         this.secretKey = secretKey;
         this.region = region;
@@ -67,6 +71,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
         this.presignedUrlExpiration = presignedUrlExpiration;
         this.notificationRepository = notificationRepository;
         this.userRepository = userRepository;
+        this.eventPublisher = eventPublisher;
 
         AwsBasicCredentials credentials = AwsBasicCredentials.create(accessKey, secretKey);
         this.s3 = S3Client.builder()
@@ -163,16 +168,14 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     private void recover(TimeoutException e, UUID id) {
         log.info("S3 업로드 재시도 전체 실패.");
 
-        List<Notification> notifications = userRepository.findByRole(Role.ADMIN).stream()
-                .map(user -> {
-                    return new Notification(
-                            "S3 파일 업로드 실패",
-                            "RequestsId: " + MDC.get("requestId") + "BinaryContentId: " + id + "Error: " + e.getMessage(),
-                            user
-                    );
-                })
-                .toList();
+        List<User> users = userRepository.findByRole(Role.ADMIN);
 
-        notificationRepository.saveAll(notifications);
+        S3UploadFailedEvent event = new S3UploadFailedEvent(
+                MDC.get("requestId"),
+                id,
+                e.getMessage(),
+                users
+        );
+        eventPublisher.publishEvent(event);
     }
 }

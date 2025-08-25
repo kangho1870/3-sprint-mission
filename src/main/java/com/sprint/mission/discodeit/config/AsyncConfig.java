@@ -39,4 +39,14 @@ public class AsyncConfig {
     {
         return buildExecutor(core, max, queue, keepAlive, "file-exec");
     }
+
+    @Bean(name = "notificationTaskExecutor")
+    public ThreadPoolTaskExecutor notificationTaskExecutor(
+            @Value("${async.executors.notification.core-size:2}") int core,
+            @Value("${async.executors.notification.max-size:4}") int max,
+            @Value("${async.executors.notification.queue-capacity:200}") int queue,
+            @Value("${async.executors.notification.keep-alive-seconds:60}") int keepAlive
+    ) {
+        return buildExecutor(core, max, queue, keepAlive, "notify-exec");
+    }
 }
