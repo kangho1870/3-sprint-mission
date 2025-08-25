@@ -1,5 +1,8 @@
 package com.sprint.mission.discodeit.config;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -9,10 +12,14 @@ import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.cache.interceptor.KeyGenerator;
-import org.springframework.cache.support.CompositeCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.redis.cache.RedisCacheConfiguration;
+import org.springframework.data.redis.cache.RedisCacheManager;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -24,19 +31,17 @@ import java.util.List;
 @Slf4j
 public class CacheConfig {
 
+    @Bean
     @Primary
-    public CacheManager compositeCacheManager() {
-
-        CompositeCacheManager compositeCacheManager = new CompositeCacheManager();
-
-        compositeCacheManager.setCacheManagers(List.of());
-
-        compositeCacheManager.setFallbackToNoOpCache(false);
-        return compositeCacheManager;
+    public CacheManager cacheManager(RedisConnectionFactory connectionFactory,
+                                     RedisCacheConfiguration redisCacheConfiguration) {
+        return RedisCacheManager.builder(connectionFactory)
+                .cacheDefaults(redisCacheConfiguration)
+                .build();
     }
 
     @Bean
-    public CacheManager userCacheManager() {
+    public CaffeineCacheManager caffeineFallbackCacheManager() {
 
         CaffeineCacheManager manager = new CaffeineCacheManager();
 
@@ -83,5 +88,25 @@ public class CacheConfig {
                     .map(User::getId)
                     .orElseThrow(() -> new UserNotFoundException(username));
         };
+    }
+
+    @Bean
+    public RedisCacheConfiguration redisCacheConfiguration(ObjectMapper objectMapper) {
+        ObjectMapper redisObjectMapper = objectMapper.copy();
+        redisObjectMapper.activateDefaultTyping(
+                LaissezFaireSubTypeValidator.instance,
+                ObjectMapper.DefaultTyping.EVERYTHING,
+                JsonTypeInfo.As.PROPERTY
+        );
+
+        return RedisCacheConfiguration.defaultCacheConfig()
+                .serializeValuesWith(
+                        RedisSerializationContext.SerializationPair.fromSerializer(
+                                new GenericJackson2JsonRedisSerializer(redisObjectMapper)
+                        )
+                )
+                .prefixCacheNameWith("discodeit:")
+                .entryTtl(Duration.ofSeconds(600))
+                .disableCachingNullValues();
     }
 }
