@@ -75,6 +75,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
 //                        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+                                .ignoringRequestMatchers("/ws/**")
                                 .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler() {
                                     @Override
                                     public void handle(HttpServletRequest request, HttpServletResponse response, Supplier<CsrfToken> csrfToken) {
@@ -102,6 +103,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/login").permitAll()
                         .requestMatchers("/api/auth/logout").permitAll()
                         .requestMatchers("/api/auth/refresh").permitAll()
+                        .requestMatchers("/ws/**").permitAll()
 
                         .requestMatchers(
                                 "/v3/api-docs/**",
