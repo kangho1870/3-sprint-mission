@@ -1,5 +1,5 @@
 server:
-  port: 80
+  port: 8080
 
 spring:
   datasource:
@@ -16,11 +16,34 @@ spring:
     properties:
       hibernate:
         default_schema: discodeit
-
+  cache:
+    type: redis
+  kafka:
+    bootstrap-servers: broker:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: discodeit-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+  data:
+    redis:
+      host: redis
+      port: 6379
   boot:
     admin:
       client:
         url: ${SPRING_BOOT_ADMIN_CLIENT_URL}
+
+jwt:
+  access-token:
+    secret: r-9o3FjVWdLUbsr4X2zmT35R4RIzw-Cct9oaaJSIQ0U
+    exp: 900000        # 15분(ms)
+  refresh-token:
+    secret: inVTlzehODZspM28GsazDrQpe3auJnC5lfNoYcwotoE
+    exp: 3600000       # 1시간(ms)
 
 logging:
   level:
