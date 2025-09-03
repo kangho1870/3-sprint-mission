@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.event.kafka;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.dto.data.NotificationDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Notification;
 import com.sprint.mission.discodeit.entity.ReadStatus;
@@ -16,6 +17,7 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.NotificationRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.service.SseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.Cache;
@@ -36,6 +38,7 @@ public class NotificationRequiredTopicListener {
     private final ReadStatusRepository readStatusRepository;
     private final ObjectMapper objectMapper;
     private final CacheManager cacheManager;
+    private final SseService sseService;
 
     @KafkaListener(topics = "discodeit.MessageCreatedEvent")
     public void onMessageCreatedEvent(String kafkaEvent) {
@@ -67,6 +70,12 @@ public class NotificationRequiredTopicListener {
             if (cache != null) {
                 notifications.forEach(n -> cache.evict(n.getUser().getId()));
             }
+
+            for (Notification n : notifications) {
+                NotificationDto dto = new NotificationDto(n.getId(), n.getCreatedAt(), n.getUser().getId(), n.getTitle(), n.getContent());
+                log.info("userId: {}", n.getUser().getId());
+                sseService.send(List.of(n.getUser().getId()), "notifications.created", dto);
+            }
         } catch (JsonMappingException e) {
             throw new RuntimeException(e);
         } catch (JsonProcessingException e) {
@@ -94,6 +103,9 @@ public class NotificationRequiredTopicListener {
             if (cache != null) {
                 cache.evict(notification.getUser().getId());
             }
+
+            NotificationDto dto = new NotificationDto(notification.getId(), notification.getCreatedAt(), notification.getUser().getId(), notification.getTitle(), notification.getContent());
+            sseService.send(List.of(notification.getUser().getId()), "notifications.created", dto);
         } catch (JsonMappingException e) {
             throw new RuntimeException(e);
         } catch (JsonProcessingException e) {

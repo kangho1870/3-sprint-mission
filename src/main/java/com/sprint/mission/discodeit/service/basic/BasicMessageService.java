@@ -21,7 +21,6 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
@@ -44,7 +43,6 @@ public class BasicMessageService implements MessageService {
     private final BinaryContentRepository binaryContentRepository;
     private final MessageMapper messageMapper;
     private final PageResponseMapper pageResponseMapper;
-    private final BinaryContentStorage binaryContentStorage;
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
@@ -71,7 +69,7 @@ public class BasicMessageService implements MessageService {
             message.addAttachment(binaryContent);
             BinaryContent savedBinaryContent = binaryContentRepository.save(binaryContent);
 
-            BinaryContentCreatedEvent event = new BinaryContentCreatedEvent(savedBinaryContent.getId(), req.bytes());
+            BinaryContentCreatedEvent event = new BinaryContentCreatedEvent(savedBinaryContent.getId(), req.bytes(), channel.getId());
             eventPublisher.publishEvent(event);
         }
 

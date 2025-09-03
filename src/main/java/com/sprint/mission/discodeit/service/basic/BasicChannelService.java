@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.ChannelEvent;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateDeniedException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -21,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +39,7 @@ public class BasicChannelService implements ChannelService {
     private final ReadStatusRepository readStatusRepository;
     private final MessageRepository messageRepository;
     private final ChannelMapper channelMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     @CacheEvict(value = "userChannels", allEntries = true)
@@ -46,7 +49,12 @@ public class BasicChannelService implements ChannelService {
         String description = request.description();
         Channel channel = new Channel(ChannelType.PUBLIC, name, description);
 
-        return channelMapper.toDto(channelRepository.save(channel));
+        Channel savedChannel = channelRepository.save(channel);
+
+        ChannelEvent event = new ChannelEvent("created", channel.getId());
+        eventPublisher.publishEvent(event);
+
+        return channelMapper.toDto(savedChannel);
     }
 
     @Transactional
@@ -108,7 +116,12 @@ public class BasicChannelService implements ChannelService {
             throw new PrivateChannelUpdateDeniedException(channelId);
         }
         channel.update(newName, newDescription);
-        return channelMapper.toDto(channelRepository.save(channel));
+        Channel savedChannel = channelRepository.save(channel);
+
+        ChannelEvent event = new ChannelEvent("updated", channel.getId());
+        eventPublisher.publishEvent(event);
+
+        return channelMapper.toDto(savedChannel);
     }
 
     @Transactional
@@ -122,6 +135,9 @@ public class BasicChannelService implements ChannelService {
         readStatusRepository.deleteAllByChannelId(channel.getId());
 
         channelRepository.deleteById(channelId);
+
+        ChannelEvent event = new ChannelEvent("deleted", channel.getId());
+        eventPublisher.publishEvent(event);
     }
 
 }

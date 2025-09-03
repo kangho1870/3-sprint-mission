@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.event.BinaryContentCreatedEvent;
+import com.sprint.mission.discodeit.event.UserEvent;
 import com.sprint.mission.discodeit.exception.user.DuplicateUserException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
@@ -59,7 +60,7 @@ public class BasicUserService implements UserService {
                             contentType
                     );
                     BinaryContent saveBinaryContent = binaryContentRepository.save(binaryContent);
-                    BinaryContentCreatedEvent event = new BinaryContentCreatedEvent(saveBinaryContent.getId(), bytes);
+                    BinaryContentCreatedEvent event = new BinaryContentCreatedEvent(saveBinaryContent.getId(), bytes, null);
                     eventPublisher.publishEvent(event);
 
                     return saveBinaryContent;
@@ -69,6 +70,9 @@ public class BasicUserService implements UserService {
 
         User user = new User(username, email, password, profile);
         User createdUser = userRepository.save(user);
+
+        UserEvent event = new UserEvent("created", createdUser.getId());
+        eventPublisher.publishEvent(event);
 
         return userMapper.toDto(createdUser);
     }
@@ -120,7 +124,7 @@ public class BasicUserService implements UserService {
             );
             BinaryContent savedBinaryContent = binaryContentRepository.save(binaryContent);
 
-            BinaryContentCreatedEvent event = new BinaryContentCreatedEvent(savedBinaryContent.getId(), bytes);
+            BinaryContentCreatedEvent event = new BinaryContentCreatedEvent(savedBinaryContent.getId(), bytes, null);
             eventPublisher.publishEvent(event);
             return binaryContent;
         }).orElse(null);
@@ -130,6 +134,11 @@ public class BasicUserService implements UserService {
             newPassword = passwordEncoder.encode(userUpdateRequest.newPassword());
         }
         user.update(newUsername, newEmail, newPassword, nullableProfile);
+
+        User savedUser = userRepository.save(user);
+
+        UserEvent event = new UserEvent("updated", savedUser.getId());
+        eventPublisher.publishEvent(event);
 
         return userMapper.toDto(user);
     }
@@ -147,6 +156,9 @@ public class BasicUserService implements UserService {
                 });
 
         userRepository.deleteById(userId);
+
+        UserEvent event = new UserEvent("deleted", user.getId());
+        eventPublisher.publishEvent(event);
     }
 
     private void valid(String newUsername, String newEmail) {

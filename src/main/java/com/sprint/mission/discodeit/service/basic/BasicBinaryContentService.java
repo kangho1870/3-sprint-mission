@@ -38,7 +38,7 @@ public class BasicBinaryContentService implements BinaryContentService {
                 (long) bytes.length,
                 contentType
         );
-        BinaryContentCreatedEvent event = new BinaryContentCreatedEvent(binaryContent.getId(), bytes);
+        BinaryContentCreatedEvent event = new BinaryContentCreatedEvent(binaryContent.getId(), bytes, null);
 
         eventPublisher.publishEvent(event);
 
