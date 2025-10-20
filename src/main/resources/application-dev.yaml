@@ -35,10 +35,10 @@ logging:
     # Spring Web 관련 디버그 로그 활성화
     org.springframework.web: trace
     # Spring Cache 관련 디버그 로그 활성화 (캐시 Hit/Miss 추적)
-    org.springframework.cache: DEBUG
+    org.springframework.cache: INFO
     org.springframework.cache.interceptor: TRACE
-    org.springframework.data.redis.cache: DEBUG
-    org.springframework.data.redis.core: DEBUG
+    org.springframework.data.redis.cache: INFO
+    org.springframework.data.redis.core: INFO
     # 애플리케이션 패키지 디버그 로그 활성화
     com.sprint.mission.discodeit: trace
 # JWT 설정

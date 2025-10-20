@@ -39,8 +39,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (StringUtils.hasText(token)) {
                 log.info("[JwtAuthenticationFilter] 토큰 추출 성공");
 
+                // 토큰 로테이션 요청인지 확인
+                String requestURI = request.getRequestURI();
+                if ("/api/auth/refresh".equals(requestURI)) {
+                    System.out.println("[JwtAuthenticationFilter] 토큰 로테이션 요청이므로 토큰 검증 건너뜀: " + requestURI);
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+
                 if (!jwtRegistry.hasActiveJwtInformationByAccessToken(token)) {
                     sendUnauthorized(response, "유효하지 않은 토큰 입니다.");
+                    return;
                 }
                 // 토큰에서 사용자명 추출
                 String username = jwtTokenProvider.getUsernameFromToken(token);

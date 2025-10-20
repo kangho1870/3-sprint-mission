@@ -22,6 +22,11 @@ public class SseController {
             Authentication authentication,
             @RequestParam(value = "lastEventId", required = false) UUID lastEventId
     ) {
+        // 인증이 없으면 익명 사용자로 처리
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new org.springframework.security.access.AccessDeniedException("인증이 필요합니다");
+        }
+        
         DiscodeitUserDetails user = (DiscodeitUserDetails) authentication.getPrincipal();
         UUID receiverId = user.getUserDto().id();
 

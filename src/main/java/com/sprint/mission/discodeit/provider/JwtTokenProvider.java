@@ -226,11 +226,21 @@ public class JwtTokenProvider {
 
         cookie.setHttpOnly(true);
         cookie.setSecure(false);
-        cookie.setPath("/api/auth");
+        cookie.setPath("/");
         cookie.setMaxAge(0);
 
         System.out.println("[TokenProvider] generateRefreshTokenExpirationCookie 완료");
 
         return cookie;
+    }
+
+    public Cookie genereateRefreshTokenCookie(String refreshToken) {
+        Cookie refreshCookie = new Cookie("REFRESH_TOKEN", refreshToken);
+
+        refreshCookie.setHttpOnly(true);
+        refreshCookie.setSecure(false);
+        refreshCookie.setPath("/");
+        refreshCookie.setMaxAge(refreshTokenExpirationMs);
+        return refreshCookie;
     }
 }

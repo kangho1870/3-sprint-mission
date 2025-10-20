@@ -63,7 +63,10 @@ public class JwtLoginSuccessHandler implements AuthenticationSuccessHandler {
                 JwtDto jwtDto = new JwtDto(userDto, accessToken);
                 response.setStatus(HttpServletResponse.SC_OK);
                 response.getWriter().write(objectMapper.writeValueAsString(jwtDto));
-                response.addCookie(new Cookie("REFRESH_TOKEN", refreshToken));
+                Cookie cookie = new Cookie("REFRESH_TOKEN", refreshToken);
+
+                cookie.setPath("/");
+                response.addCookie(cookie);
             } catch (JOSEException e) {
                 throw new RuntimeException(e);
             }

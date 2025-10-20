@@ -2,9 +2,7 @@ package com.sprint.mission.discodeit.event.kafka;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sprint.mission.discodeit.event.MessageCreatedEvent;
-import com.sprint.mission.discodeit.event.RoleUpdatedEvent;
-import com.sprint.mission.discodeit.event.S3UploadFailedEvent;
+import com.sprint.mission.discodeit.event.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -27,13 +25,15 @@ public class KafkaProduceRequiredEventListener {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void on(MessageCreatedEvent event) {
-
+        log.info("[KafkaProduceRequiredEventListener] MessageCreatedEvent 수신: channelId={}, authorId={}", event.channelId(), event.authorId());
         try {
             String payload = objectMapper.writeValueAsString(event);
-            log.info("[메세지 생성 이벤트리스너] payload: {}", payload);
+            log.info("[KafkaProduceRequiredEventListener] Kafka 전송 시작: topic=discodeit.MessageCreatedEvent, payload={}", payload);
 
             kafkaTemplate.send("discodeit.MessageCreatedEvent", payload);
+            log.info("[KafkaProduceRequiredEventListener] Kafka 전송 완료: topic=discodeit.MessageCreatedEvent");
         } catch (RuntimeException | JsonProcessingException e) {
+            log.error("[KafkaProduceRequiredEventListener] Kafka 전송 실패: {}", e.getMessage(), e);
             throw new RuntimeException(e);
         }
     }
@@ -58,6 +58,43 @@ public class KafkaProduceRequiredEventListener {
         try {
             String payload = objectMapper.writeValueAsString(event);
             kafkaTemplate.send("discodeit.S3UploadFiledEvent", payload);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Async("notificationTaskExecutor")
+    @TransactionalEventListener
+    public void on(UserLogInOutEvent event) {
+        try {
+            String payload = objectMapper.writeValueAsString(event);
+            kafkaTemplate.send("discodeit.UserLogInOutEvent", payload);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Async("notificationTaskExecutor")
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void on(UserEvent event) {
+
+        String payload = null;
+        try {
+            payload = objectMapper.writeValueAsString(event);
+            kafkaTemplate.send("discodeit.UserEvent", payload);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Async("notificationTaskExecutor")
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void on(ChannelEvent event) {
+
+        String payload = null;
+        try {
+            payload = objectMapper.writeValueAsString(event);
+            kafkaTemplate.send("discodeit.ChannelEvent", payload);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }

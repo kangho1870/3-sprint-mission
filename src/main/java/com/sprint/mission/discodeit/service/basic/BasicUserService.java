@@ -72,7 +72,9 @@ public class BasicUserService implements UserService {
         User createdUser = userRepository.save(user);
 
         UserEvent event = new UserEvent("created", createdUser.getId());
+        log.info("[BasicUserService] UserEvent 발행: type={}, userId={}", event.type(), event.userId());
         eventPublisher.publishEvent(event);
+        log.info("[BasicUserService] UserEvent 발행 완료");
 
         return userMapper.toDto(createdUser);
     }

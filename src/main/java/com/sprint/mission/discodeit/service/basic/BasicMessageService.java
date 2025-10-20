@@ -74,10 +74,11 @@ public class BasicMessageService implements MessageService {
         }
 
         Message savedMessage = messageRepository.save(message);
+        MessageDto dto = messageMapper.toDto(savedMessage);
 
-        MessageCreatedEvent messageCreatedEvent = new MessageCreatedEvent(savedMessage.getId(), message.getChannel().getId(), message.getAuthor().getId(), message.getContent());
+        MessageCreatedEvent messageCreatedEvent = new MessageCreatedEvent(savedMessage.getId(), message.getChannel().getId(), message.getAuthor().getId(), dto);
         eventPublisher.publishEvent(messageCreatedEvent);
-        return messageMapper.toDto(savedMessage);
+        return dto;
     }
 
     @Transactional(readOnly = true)

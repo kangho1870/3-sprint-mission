@@ -11,4 +11,5 @@ public interface JwtRegistry {
     boolean hasActiveJwtInformationByAccessToken(String accessToken);
     boolean hasActiveJwtInformationByRefreshToken(String refreshToken);
     JwtInformation rotateJwtInformation(String refreshToken, JwtInformation newjwtInformation);
+    void clearExpiredJwtInformation();
 }

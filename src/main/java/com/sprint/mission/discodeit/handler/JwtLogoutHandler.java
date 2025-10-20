@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.handler;
 
+import com.sprint.mission.discodeit.event.UserLogInOutEvent;
 import com.sprint.mission.discodeit.provider.JwtTokenProvider;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.registry.JwtRegistry;
@@ -10,6 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
@@ -23,6 +25,7 @@ public class JwtLogoutHandler implements LogoutHandler {
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtRegistry jwtRegistry;
     private final UserRepository userRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @CacheEvict(value = "users", allEntries = true)
     @Override
@@ -59,6 +62,7 @@ public class JwtLogoutHandler implements LogoutHandler {
         if (authentication != null && authentication.getPrincipal() instanceof DiscodeitUserDetails user) {
             log.info("[JwtLogoutHandler] 사용자 정보로 Registry 무효화: userId={}", user.getUserDto().id());
             jwtRegistry.inValidJwtInformationByUserId(user.getUserDto().id());
+            eventPublisher.publishEvent(new UserLogInOutEvent(user.getUserDto().id(), false));
         } else {
             // authentication이 null인 경우, Refresh 토큰 쿠키에서 사용자 정보를 추출하여 Registry 무효화
             if (cookies != null) {
@@ -74,6 +78,7 @@ public class JwtLogoutHandler implements LogoutHandler {
                                     .ifPresent(user -> {
                                         log.info("[JwtLogoutHandler] Refresh 토큰으로 Registry 무효화: userId={}, username={}", user.getId(), username);
                                         jwtRegistry.inValidJwtInformationByUserId(user.getId());
+                                        eventPublisher.publishEvent(new UserLogInOutEvent(user.getId(), false));
                                     });
                         } catch (Exception e) {
                             log.error("[JwtLogoutHandler] Refresh 토큰에서 사용자명 추출 실패", e);

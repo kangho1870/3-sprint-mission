@@ -53,7 +53,7 @@ public class NotificationRequiredEventListener {
         log.info("[알림 생성 이벤트 리스너] 찾은 채팅방 알림 true User 수: {}", readStatuses.size());
         List<Notification> notifications = readStatuses.stream()
                 .filter(readStatus -> !readStatus.getUser().equals(user))
-                .map(readStatus -> new Notification(title, event.content(), readStatus.getUser()))
+                .map(readStatus -> new Notification(title, event.message().content(), readStatus.getUser()))
                 .toList();
 
         log.info("[알림 생성 이벤트 리스너] 생성한 알림 수: {}", notifications.size());

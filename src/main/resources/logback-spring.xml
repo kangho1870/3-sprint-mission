@@ -144,12 +144,14 @@
     <springProfile name="prod">
         <!-- 루트 로거 설정 -->
         <root level="WARN">
+            <appender-ref ref="CONSOLE"/>
             <appender-ref ref="FILE"/>
             <appender-ref ref="ERROR_FILE"/>
         </root>
         
         <!-- 애플리케이션 패키지 로그 레벨 설정 -->
         <logger name="com.sprint.mission.discodeit" level="INFO" additivity="false">
+            <appender-ref ref="CONSOLE"/>
             <appender-ref ref="FILE"/>
             <appender-ref ref="ERROR_FILE"/>
         </logger>

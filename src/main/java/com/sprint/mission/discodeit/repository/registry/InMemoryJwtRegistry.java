@@ -4,20 +4,23 @@ import com.sprint.mission.discodeit.dto.data.JwtInformation;
 import com.sprint.mission.discodeit.provider.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
+import org.springframework.scheduling.annotation.Scheduled;
 
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 @Slf4j
-@Component
+//@Component
 @RequiredArgsConstructor
 public class InMemoryJwtRegistry implements JwtRegistry {
 
     private final Map<UUID, Queue<JwtInformation>> origin = new ConcurrentHashMap<>();
+    private final Set<String> accessTokenIndexes = ConcurrentHashMap.newKeySet();
+    private final Set<String> refreshTokenIndexes = ConcurrentHashMap.newKeySet();
 
     private final JwtTokenProvider jwtTokenProvider;
     private final int maxActiveJwtCount = 1;
@@ -181,5 +184,31 @@ public class InMemoryJwtRegistry implements JwtRegistry {
         origin.put(newjwtInformation.userDto().id(), jwtInformationQueue);
 
         return newjwtInformation;
+    }
+
+    @Scheduled(fixedDelay = 1000 * 60 * 5)
+    @Override
+    public void clearExpiredJwtInformation() {
+        origin.entrySet().removeIf(entry -> {
+            Queue<JwtInformation> queue = entry.getValue();
+            queue.removeIf(jwtInformation -> {
+                boolean isExpired =
+                        !jwtTokenProvider.validateAccessToken(jwtInformation.accessToken()) ||
+                                !jwtTokenProvider.validateRefreshToken(jwtInformation.refreshToken());
+                if (isExpired) {
+                    removeTokenIndex(
+                            jwtInformation.accessToken(),
+                            jwtInformation.refreshToken()
+                    );
+                }
+                return isExpired;
+            });
+            return queue.isEmpty(); // Remove the entry if the queue is empty
+        });
+    }
+
+    private void removeTokenIndex(String accessToken, String refreshToken) {
+        accessTokenIndexes.remove(accessToken);
+        refreshTokenIndexes.remove(refreshToken);
     }
 }

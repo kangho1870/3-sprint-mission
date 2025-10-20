@@ -1,8 +1,10 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.data.JwtDto;
+import com.sprint.mission.discodeit.dto.data.JwtInformation;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.RoleUpdateRequest;
+import com.sprint.mission.discodeit.provider.JwtTokenProvider;
 import com.sprint.mission.discodeit.service.AuthService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
@@ -24,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @GetMapping("/csrf-token")
     public ResponseEntity<Void> getCsrfToken(CsrfToken csrfToken) {
@@ -43,7 +46,9 @@ public class AuthController {
     public ResponseEntity<JwtDto> refreshToken(
             @CookieValue(name = "REFRESH_TOKEN", required = false) String refreshToken,
             HttpServletResponse response) {
-        JwtDto jwtDto = authService.refreshToken(refreshToken, response);
+        JwtInformation jwtInformation = authService.refreshToken(refreshToken, response);
+
+        JwtDto jwtDto = new JwtDto(jwtInformation.userDto(), jwtInformation.accessToken());
 
         return ResponseEntity.status(HttpStatus.OK).body(jwtDto);
     }

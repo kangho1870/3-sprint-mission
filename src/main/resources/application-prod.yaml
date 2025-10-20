@@ -3,9 +3,9 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://${RDS_ENDPOINT}:5432/${RDS_DATABASE}
-    username: ${RDS_USERNAME}
-    password: ${RDS_PASSWORD}
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
       connection-init-sql: SET SESSION hibernate.jdbc.lob.non_contextual_creation=true
@@ -16,18 +16,27 @@ spring:
     properties:
       hibernate:
         default_schema: discodeit
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        show_sql: false
   cache:
     type: redis
   kafka:
-    bootstrap-servers: broker:9092
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:broker:29092}
+    admin:
+      auto-create: true
     producer:
+      bootstrap-servers: ${SPRING_KAFKA_PRODUCER_BOOTSTRAP_SERVERS:broker:29092}
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
     consumer:
-      group-id: discodeit-group
+      bootstrap-servers: ${SPRING_KAFKA_CONSUMER_BOOTSTRAP_SERVERS:broker:29092}
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: com.sprint.mission.discodeit.event
+        spring.json.type.mapping: discodeit.UserEvent:com.sprint.mission.discodeit.event.UserEvent,discodeit.ChannelEvent:com.sprint.mission.discodeit.event.ChannelEvent
   data:
     redis:
       host: redis
@@ -47,4 +56,13 @@ jwt:
 
 logging:
   level:
-    root: info
+    # Spring Cache 관련 디버그 로그 활성화 (캐시 Hit/Miss 추적)
+    org.springframework.cache: INFO
+    org.springframework.cache.interceptor: TRACE
+    org.springframework.data.redis.cache: INFO
+    org.springframework.data.redis.core: INFO
+    # 애플리케이션 패키지 로그 레벨 설정
+    com.sprint.mission.discodeit: INFO
+    # Kafka 관련 로그도 INFO 레벨로 설정
+    org.springframework.kafka: INFO
+    org.apache.kafka: INFO
